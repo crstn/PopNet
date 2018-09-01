@@ -27,29 +27,29 @@ def import_to_postgres(country, pgpath, pghost, pgport, pguser, pgpassword, pgda
     # Loading corine 2012 into postgres
     print("Importing corine 2012 to postgres")
     clc12path = os.path.join(ancillary_data_folder_path , "corine", "clc12_Version_18_5a_sqLite", "clc12_Version_18_5.sqlite")
-    cmds = 'ogr2ogr -lco GEOMETRY_NAME=geom -lco SCHEMA=public -f "PostgreSQL" \
-    PG:"host={0} port={1} user={2} dbname={3} password={4}" \
-    -a_srs "EPSG:3035" {5} -sql "SELECT * FROM clc12_Version_18_5 \
-    WHERE code_12 = 124 OR code_12 = 121 OR code_12 = 311 OR code_12 = 312 OR code_12 = 313" \
-    -spat {6} {7} {8} {9} -nln {10}_corine'.format(pghost, pgport, pguser, pgdatabase, pgpassword, clc12path, xmin, ymin, xmax, ymax, country)
+    cmds = """ogr2ogr -lco GEOMETRY_NAME=geom -lco SCHEMA=public -f "PostgreSQL"
+    PG:"host={0} port={1} user={2} dbname={3} password={4}"
+    -a_srs "EPSG:3035" {5} -sql "SELECT * FROM clc12_Version_18_5
+    WHERE code_12 = 124 OR code_12 = 121 OR code_12 = 311 OR code_12 = 312 OR code_12 = 313"
+    -spat {6} {7} {8} {9} -nln {10}_corine""".format(pghost, pgport, pguser, pgdatabase, pgpassword, clc12path, xmin, ymin, xmax, ymax, country)
     subprocess.call(cmds, shell=True)
 
     # Loading corine 1990 into postgres
     print("Importing corine 1990 to postgres")
     clc90path = os.path.join(ancillary_data_folder_path + "corine", "clc90_Version_18_5_sqLite", "clc90_Version_18_5.sqlite")
-    cmds = 'ogr2ogr -lco GEOMETRY_NAME=geom -lco SCHEMA=public -f "PostgreSQL" \
-    PG:"host={0} port={1} user={2} dbname={3} password={4}" \
-    -a_srs "EPSG:3035" {5} -sql "SELECT * FROM clc90_Version_18_5 \
-    WHERE code_90 = 124 OR code_90 = 121 OR code_90 = 311 OR code_90 = 312 OR code_90 = 313" \
-    -spat {6} {7} {8} {9} -nln {10}_corine90'.format(pghost, pgport, pguser, pgdatabase, pgpassword, clc90path, xmin, ymin, xmax, ymax, country)
+    cmds = """ogr2ogr -lco GEOMETRY_NAME=geom -lco SCHEMA=public -f "PostgreSQL"
+    PG:"host={0} port={1} user={2} dbname={3} password={4}"
+    -a_srs "EPSG:3035" {5} -sql "SELECT * FROM clc90_Version_18_5
+    WHERE code_90 = 124 OR code_90 = 121 OR code_90 = 311 OR code_90 = 312 OR code_90 = 313"
+    -spat {6} {7} {8} {9} -nln {10}_corine90""".format(pghost, pgport, pguser, pgdatabase, pgpassword, clc90path, xmin, ymin, xmax, ymax, country)
     subprocess.call(cmds, shell=True)
 
     # Loading trainstations into postgres
     print("Importing train stations to postgres")
     trainpath = os.path.join(temp_folder_path , "european_train_stations.shp")
-    cmds = 'ogr2ogr -lco GEOMETRY_NAME=geom -lco SCHEMA=public -f "PostgreSQL" \
-            PG:"host={0} port={1} user={2} dbname={3} password={4}" \
-            {5} -sql "select * from european_train_stations" -nln {6}_train'.format(pghost, pgport, pguser, pgdatabase, pgpassword,trainpath, country)
+    cmds =  """ogr2ogr -lco GEOMETRY_NAME=geom -lco SCHEMA=public -f "PostgreSQL"
+            PG:"host={0} port={1} user={2} dbname={3} password={4}"
+            {5} -sql "select * from european_train_stations" -nln {6}_train""".format(pghost, pgport, pguser, pgdatabase, pgpassword,trainpath, country)
     subprocess.call(cmds, shell=True)
 
     # Setting environment for psql
@@ -63,9 +63,9 @@ def import_to_postgres(country, pgpath, pghost, pgport, pguser, pgpassword, pgda
     # Loading vector grid into postgresql
     print("Importing vectorgrid to postgres")
     gridpath = os.path.join(temp_folder_path , "{0}_2015vector.shp".format(country))
-    cmds = 'ogr2ogr --config PG_USE_COPY YES -gt 65536 -f PGDump /vsistdout/ \
-    {0} -a_srs "EPSG:54009" -lco GEOMETRY_NAME=geom -lco SCHEMA=public -lco \
-    CREATE_SCHEMA=OFF -lco SPATIAL_INDEX=OFF | psql'.format(gridpath)
+    cmds = """ogr2ogr --config PG_USE_COPY YES -gt 65536 -f PGDump /vsistdout/
+    {0} -a_srs "EPSG:54009" -lco GEOMETRY_NAME=geom -lco SCHEMA=public -lco 
+    CREATE_SCHEMA=OFF -lco SPATIAL_INDEX=OFF | psql""".format(gridpath)
     subprocess.call(cmds, shell=True)
 
     # Loading iteration grid into postgres

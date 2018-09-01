@@ -42,8 +42,7 @@ def process_data(country, pgpath, pghost, pgport, pguser, pgpassword, pgdatabase
         input_gadm_dataset = os.path.join(gadm_folder_path, "gadm28_adm0.shp")
         output_country_shp = os.path.join(temp_folder_path,"GADM_{0}.shp".format(country))
         sql_statement = "NAME_ENGLI='{0}'".format(country)
-        country_shp = 'ogr2ogr -where {0} -f "ESRI Shapefile"  {1} {2} -lco ENCODING=UTF-8'\
-            .format(sql_statement, output_country_shp, input_gadm_dataset)
+        country_shp = 'ogr2ogr -where {0} -f "ESRI Shapefile"  {1} {2} -lco ENCODING=UTF-8'.format(sql_statement, output_country_shp, input_gadm_dataset)
         subprocess.call(country_shp, shell=True)
 
         # create bounding box around chosen country
@@ -144,8 +143,8 @@ def process_data(country, pgpath, pghost, pgport, pguser, pgpassword, pgdatabase
                         bottom = miny + (gt[5] - ((miny - gt[3]) % gt[5]))
                         top = maxy - (maxy - gt[3]) % gt[5]
 
-                        cmd_clip = 'gdalwarp -te {0} {1} {2} {3} -tr {4} {5} -cutline {6} -srcnodata -3.4028234663852886e+38 \
-                                    -dstnodata 0 {7} {8}'.format(
+                        cmd_clip = """gdalwarp -te {0} {1} {2} {3} -tr {4} {5} -cutline {6} -srcnodata -3.4028234663852886e+38
+                                    -dstnodata 0 {7} {8}""".format(
                         str(left), str(bottom), str(right), str(top), str(abs(gt[1])), str(abs(gt[5])),
                         country_mask, ghs_file_path, out_file_path)
                         subprocess.call(cmd_clip, shell=True)
@@ -172,15 +171,13 @@ def process_data(country, pgpath, pghost, pgport, pguser, pgpassword, pgdatabase
         cutlinefile = os.path.join(temp_folder_path,"GADM_{0}.shp".format(country))
         srcfile = os.path.join(ancillary_data_folder_path,"slope","slope_europe.tif")
         dstfile = os.path.join(temp_folder_path,"slope_250_{0}.tif".format(country))
-        cmds = 'gdalwarp -s_srs EPSG:54009 -tr 250 250 -te {0} {1} {2} {3} -cutline {4} -srcnodata 255 -dstnodata 0 {5} {6}'\
-            .format(minx, miny, maxx, maxy, cutlinefile, srcfile, dstfile)
+        cmds = 'gdalwarp -s_srs EPSG:54009 -tr 250 250 -te {0} {1} {2} {3} -cutline {4} -srcnodata 255 -dstnodata 0 {5} {6}'.format(minx, miny, maxx, maxy, cutlinefile, srcfile, dstfile)
         subprocess.call(cmds, shell=True)
 
         print("Recalculating slope raster values")
         # Recalculate slope raster values of 0 - 250 to real slope value 0 to 90 degrees
         outfile = os.path.join(merge_folder_path,"slope_{0}_finished_vers.tif".format(country))
-        cmds = 'python {0}\gdal_calc.py -A {1} --outfile={2} --calc="numpy.arcsin((250-(A))/250)*180/numpy.pi" --NoDataValue=0'\
-            .format(python_scripts_folder_path, dstfile, outfile)
+        cmds = 'python {0}\gdal_calc.py -A {1} --outfile={2} --calc="numpy.arcsin((250-(A))/250)*180/numpy.pi" --NoDataValue=0'.format(python_scripts_folder_path, dstfile, outfile)
         subprocess.call(cmds, shell=False)
 
         # Clipping lakes layer to country ----------------------------------------------------------------------------------
@@ -205,7 +202,7 @@ def process_data(country, pgpath, pghost, pgport, pguser, pgpassword, pgdatabase
         # Extracting train stations for the chosen country
         print("------------------------------ Creating train stations for {0} ------------------------------"
               .format(country))
-        infile = os.path.join(ancillary_data_folder_path,"european_train_stations\european_train_stations.shp")
+        infile = os.path.join(ancillary_data_folder_path,"european_train_stations", "european_train_stations.shp")
         outfile = os.path.join(temp_folder_path,"european_train_stations.shp")
         country_code_dict = {'Denmark': 'DK', 'France': 'FR', 'Deutchland': 'DE'}
         cmds = "ogr2ogr -where country='{0}' {1} {2}".format(country_code_dict[country], outfile, infile)
@@ -225,8 +222,8 @@ def process_data(country, pgpath, pghost, pgport, pguser, pgpassword, pgdatabase
         cur = conn.cursor()
 
         # check for and add postgis extension if not existing
-        cur.execute("SELECT * FROM pg_available_extensions \
-                    WHERE name LIKE 'postgis';")
+        cur.execute("""SELECT * FROM pg_available_extensions
+                    WHERE name LIKE 'postgis';""")
         check_postgis = cur.rowcount
         if check_postgis == 0:
             print("Adding extension postgis")
@@ -250,11 +247,11 @@ def process_data(country, pgpath, pghost, pgport, pguser, pgpassword, pgdatabase
             param_central = '"Central_Meridian"'
             unit_meter = '"Meter"'
             authority = '"ESPG","54009"'
-            cur.execute("INSERT into spatial_ref_sys (srid, auth_name, auth_srid, proj4text, srtext) values \
-            ( 54009, 'ESRI', 54009, '+proj=moll +lon_0=0 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs ', \
-            'PROJCS[{0},GEOGCS[{1},DATUM[{2},SPHEROID[{3},6378137,298.257223563]],\
-            PRIMEM[{4},0],UNIT[{5},0.017453292519943295]],PROJECTION[{6}],PARAMETER[{7},0],\
-            PARAMETER[{8},0],PARAMETER[{9},0],UNIT[{10},1],AUTHORITY[{11}]]');"
+            cur.execute("""INSERT into spatial_ref_sys (srid, auth_name, auth_srid, proj4text, srtext) values
+            ( 54009, 'ESRI', 54009, '+proj=moll +lon_0=0 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs ',
+            'PROJCS[{0},GEOGCS[{1},DATUM[{2},SPHEROID[{3},6378137,298.257223563]],
+            PRIMEM[{4},0],UNIT[{5},0.017453292519943295]],PROJECTION[{6}],PARAMETER[{7},0],
+            PARAMETER[{8},0],PARAMETER[{9},0],UNIT[{10},1],AUTHORITY[{11}]]');"""
                         .format(projs, geogcs, datum, spheroid, primem, unit_degree, projection,
                                 param_easting, param_northing, param_central, unit_meter, authority))
             conn.commit()
@@ -295,8 +292,7 @@ def process_data(country, pgpath, pghost, pgport, pguser, pgpassword, pgdatabase
         corine =           os.path.join(merge_folder_path , "{0}_corine1990.tif".format(country))
         train =            os.path.join(merge_folder_path , "{0}_train_stations.tif".format(country))
         municipal =        os.path.join(merge_folder_path , "{0}_municipality.tif".format(country))
-        cmd_tif_merge = "python {0}\gdal_merge.py -o {1} -separate {2} {3} {4} {5} {6} {7} {8}"\
-        .format(python_scripts_folder_path, outfile, original_tif_pop,
+        cmd_tif_merge = "python {0}\gdal_merge.py -o {1} -separate {2} {3} {4} {5} {6} {7} {8}".format(python_scripts_folder_path, outfile, original_tif_pop,
                 water, road_dist, slope, corine, train, municipal)
         subprocess.call(cmd_tif_merge, shell=False)
 
@@ -310,8 +306,7 @@ def process_data(country, pgpath, pghost, pgport, pguser, pgpassword, pgdatabase
         corine =           os.path.join(merge_folder_path , "{0}_corine1990.tif".format(country))
         train =            os.path.join(merge_folder_path , "{0}_train_stations.tif".format(country))
         municipal =        os.path.join(merge_folder_path , "{0}_municipality.tif".format(country))
-        cmd_tif_merge = "python {0}\gdal_merge.py -o {1} -separate {2} {3} {4} {5} {6} {7} {8}" \
-            .format(python_scripts_folder_path, outfile, original_tif_pop,
+        cmd_tif_merge = "python {0}\gdal_merge.py -o {1} -separate {2} {3} {4} {5} {6} {7} {8}" .format(python_scripts_folder_path, outfile, original_tif_pop,
                     water, road_dist, slope, corine, train, municipal)
         subprocess.call(cmd_tif_merge, shell=False)
 
@@ -325,8 +320,7 @@ def process_data(country, pgpath, pghost, pgport, pguser, pgpassword, pgdatabase
         corine =           os.path.join(merge_folder_path , "{0}_corine2012.tif".format(country))
         train =            os.path.join(merge_folder_path , "{0}_train_stations.tif".format(country))
         municipal =        os.path.join(merge_folder_path , "{0}_municipality.tif".format(country))
-        cmd_tif_merge = "python {0}\gdal_merge.py -o {1} -separate {2} {3} {4} {5} {6} {7} {8}" \
-            .format(python_scripts_folder_path, outfile, original_tif_pop,
+        cmd_tif_merge = "python {0}\gdal_merge.py -o {1} -separate {2} {3} {4} {5} {6} {7} {8}".format(python_scripts_folder_path, outfile, original_tif_pop,
                     water, road_dist, slope, corine, train, municipal)
         subprocess.call(cmd_tif_merge, shell=False)
 
@@ -340,8 +334,7 @@ def process_data(country, pgpath, pghost, pgport, pguser, pgpassword, pgdatabase
         corine =           os.path.join(merge_folder_path , "{0}_corine2012.tif".format(country))
         train =            os.path.join(merge_folder_path , "{0}_train_stations.tif".format(country))
         municipal =        os.path.join(merge_folder_path , "{0}_municipality.tif".format(country))
-        cmd_tif_merge = "python {0}\gdal_merge.py -o {1} -separate {2} {3} {4} {5} {6} {7} {8}" \
-            .format(python_scripts_folder_path, outfile, original_tif_pop,
+        cmd_tif_merge = "python {0}\gdal_merge.py -o {1} -separate {2} {3} {4} {5} {6} {7} {8}".format(python_scripts_folder_path, outfile, original_tif_pop,
                     water, road_dist, slope, corine, train, municipal)
         subprocess.call(cmd_tif_merge, shell=False)
 
