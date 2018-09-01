@@ -63,16 +63,9 @@ merge_folder_path =          os.path.join(python_script_dir , "Tif_to_merge")
 #path to data folder to store the final tif files
 finished_data_path =         os.path.join(python_script_dir , "Finished_data")
 
-# Other Paths to necessary python scripts and functions ----------------------------------------------------------------
-# path to folder containing gdal_calc.py and gdal_merge.py
-# python_scripts_folder_path = r'C:\Users\thoma\Anaconda3\envs\kandidat\Scripts'
-python_scripts_folder_path = '/Library/Frameworks/GDAL.framework/Versions/2.2/Programs'
-#path to folder with gdal_rasterize.exe
-# gdal_rasterize_path = r'C:\Users\thoma\Anaconda3\envs\kandidat\lib\site-packages\osgeo'
-gdal_rasterize_path = '/Library/Frameworks/GDAL.framework/Versions/2.2/Programs/'
 
 # Process all data -----------------------------------------------------------------------------------------------------
 process_data(country, pgpath, pghost, pgport, pguser, pgpassword, pgdatabase, ancillary_data_folder_path,
              gadm_folder_path, ghs_folder_path, temp_folder_path, merge_folder_path, finished_data_path,
-             python_scripts_folder_path, gdal_rasterize_path, init_prep, init_import_to_postgres, init_run_queries,
+             init_prep, init_import_to_postgres, init_run_queries,
              init_export_data, init_rasterize_data, init_merge_data)

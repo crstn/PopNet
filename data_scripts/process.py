@@ -14,7 +14,7 @@ from import_to_postgres import import_to_postgres
 
 def process_data(country, pgpath, pghost, pgport, pguser, pgpassword, pgdatabase, ancillary_data_folder_path,
                  gadm_folder_path, ghs_folder_path, temp_folder_path, merge_folder_path, finished_data_path,
-                 python_scripts_folder_path, gdal_rasterize_path, init_prep, init_import_to_postgres,
+                 init_prep, init_import_to_postgres,
                  init_run_queries, init_export_data, init_rasterize_data, init_merge_data):
     #Start total preparation time timer
     start_total_algorithm_timer = time.time()
@@ -177,7 +177,7 @@ def process_data(country, pgpath, pghost, pgport, pguser, pgpassword, pgdatabase
         print("Recalculating slope raster values")
         # Recalculate slope raster values of 0 - 250 to real slope value 0 to 90 degrees
         outfile = os.path.join(merge_folder_path,"slope_{0}_finished_vers.tif".format(country))
-        cmds = 'python {0}\gdal_calc.py -A {1} --outfile={2} --calc="numpy.arcsin((250-(A))/250)*180/numpy.pi" --NoDataValue=0'.format(python_scripts_folder_path, dstfile, outfile)
+        cmds = 'gdal_calc.py -A {1} --outfile={2} --calc="numpy.arcsin((250-(A))/250)*180/numpy.pi" --NoDataValue=0'.format(dstfile, outfile)
         subprocess.call(cmds, shell=False)
 
         # Clipping lakes layer to country ----------------------------------------------------------------------------------
@@ -277,7 +277,7 @@ def process_data(country, pgpath, pghost, pgport, pguser, pgpassword, pgdatabase
     # Rasterize layers from postgres -----------------------------------------------------------------------------------
     if init_rasterize_data == "yes":
         print("------------------------------------ RASTERIZING DATA ------------------------------------")
-        shptoraster(country, gdal_rasterize_path, 250, 250, temp_folder_path, merge_folder_path)
+        shptoraster(country, 250, 250, temp_folder_path, merge_folder_path)
 
     # Merging all ghs files into one multiband raster ------------------------------------------------------------------
     if init_merge_data == "yes":
@@ -292,7 +292,7 @@ def process_data(country, pgpath, pghost, pgport, pguser, pgpassword, pgdatabase
         corine =           os.path.join(merge_folder_path , "{0}_corine1990.tif".format(country))
         train =            os.path.join(merge_folder_path , "{0}_train_stations.tif".format(country))
         municipal =        os.path.join(merge_folder_path , "{0}_municipality.tif".format(country))
-        cmd_tif_merge = "python {0}\gdal_merge.py -o {1} -separate {2} {3} {4} {5} {6} {7} {8}".format(python_scripts_folder_path, outfile, original_tif_pop,
+        cmd_tif_merge = "gdal_merge.py -o {0} -separate {1} {2} {3} {4} {5} {6} {7}".format(outfile, original_tif_pop,
                 water, road_dist, slope, corine, train, municipal)
         subprocess.call(cmd_tif_merge, shell=False)
 
@@ -306,8 +306,8 @@ def process_data(country, pgpath, pghost, pgport, pguser, pgpassword, pgdatabase
         corine =           os.path.join(merge_folder_path , "{0}_corine1990.tif".format(country))
         train =            os.path.join(merge_folder_path , "{0}_train_stations.tif".format(country))
         municipal =        os.path.join(merge_folder_path , "{0}_municipality.tif".format(country))
-        cmd_tif_merge = "python {0}\gdal_merge.py -o {1} -separate {2} {3} {4} {5} {6} {7} {8}" .format(python_scripts_folder_path, outfile, original_tif_pop,
-                    water, road_dist, slope, corine, train, municipal)
+        cmd_tif_merge = "gdal_merge.py -o {0} -separate {1} {2} {3} {4} {5} {6} {7}" .format(outfile,
+            original_tif_pop, water, road_dist, slope, corine, train, municipal)
         subprocess.call(cmd_tif_merge, shell=False)
 
         # Merging files for 2000
@@ -320,8 +320,8 @@ def process_data(country, pgpath, pghost, pgport, pguser, pgpassword, pgdatabase
         corine =           os.path.join(merge_folder_path , "{0}_corine2012.tif".format(country))
         train =            os.path.join(merge_folder_path , "{0}_train_stations.tif".format(country))
         municipal =        os.path.join(merge_folder_path , "{0}_municipality.tif".format(country))
-        cmd_tif_merge = "python {0}\gdal_merge.py -o {1} -separate {2} {3} {4} {5} {6} {7} {8}".format(python_scripts_folder_path, outfile, original_tif_pop,
-                    water, road_dist, slope, corine, train, municipal)
+        cmd_tif_merge = "gdal_merge.py -o {0} -separate {1} {2} {3} {4} {5} {6} {7}".format(outfile,
+            original_tif_pop, water, road_dist, slope, corine, train, municipal)
         subprocess.call(cmd_tif_merge, shell=False)
 
         # Merging files for 2000
@@ -334,8 +334,8 @@ def process_data(country, pgpath, pghost, pgport, pguser, pgpassword, pgdatabase
         corine =           os.path.join(merge_folder_path , "{0}_corine2012.tif".format(country))
         train =            os.path.join(merge_folder_path , "{0}_train_stations.tif".format(country))
         municipal =        os.path.join(merge_folder_path , "{0}_municipality.tif".format(country))
-        cmd_tif_merge = "python {0}\gdal_merge.py -o {1} -separate {2} {3} {4} {5} {6} {7} {8}".format(python_scripts_folder_path, outfile, original_tif_pop,
-                    water, road_dist, slope, corine, train, municipal)
+        cmd_tif_merge = "gdal_merge.py -o {0} -separate {1} {2} {3} {4} {5} {6} {7}".format(outfile,
+            original_tif_pop, water, road_dist, slope, corine, train, municipal)
         subprocess.call(cmd_tif_merge, shell=False)
 
     # stop total algorithm time timer ----------------------------------------------------------------------------------
