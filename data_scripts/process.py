@@ -30,7 +30,7 @@ def process_data(country, pgpath, pghost, pgport, pguser, pgpassword, pgdatabase
     if not os.path.exists(finished_data_path):
         os.makedirs(finished_data_path)
     # create country folder within the finished_data folder
-    country_path = finished_data_path + "\{0}".format(country)
+    country_path = os.path.join(finished_data_path,"{0}".format(country))
     if not os.path.exists(country_path):
         os.makedirs(country_path)
 
@@ -39,8 +39,8 @@ def process_data(country, pgpath, pghost, pgport, pguser, pgpassword, pgdatabase
         print("------------------------------ PROCESSING POPULATION RASTER ------------------------------")
         print("Extracting {0} from GADM data layer".format(country))
         # select country in GADM and write to new file
-        input_gadm_dataset = gadm_folder_path + "\gadm28_adm0.shp"
-        output_country_shp = temp_folder_path + "\GADM_{0}.shp".format(country)
+        input_gadm_dataset = os.path.join(gadm_folder_path, "gadm28_adm0.shp")
+        output_country_shp = os.path.join(temp_folder_path,"GADM_{0}.shp".format(country))
         sql_statement = "NAME_ENGLI='{0}'".format(country)
         country_shp = 'ogr2ogr -where {0} -f "ESRI Shapefile"  {1} {2} -lco ENCODING=UTF-8'\
             .format(sql_statement, output_country_shp, input_gadm_dataset)
@@ -65,7 +65,7 @@ def process_data(country, pgpath, pghost, pgport, pguser, pgpassword, pgdatabase
         poly.AddGeometry(ring)
 
         # Save extent to a new Shapefile
-        outShapefile = temp_folder_path + "\extent_{0}.shp".format(country)
+        outShapefile = os.path.join(temp_folder_path,"extent_{0}.shp".format(country))
         outDriver = ogr.GetDriverByName("ESRI Shapefile")
 
         # Remove output shapefile if it already exists
@@ -99,7 +99,7 @@ def process_data(country, pgpath, pghost, pgport, pguser, pgpassword, pgdatabase
         spatialRef = layer.GetSpatialRef()
         in_epsg = int(spatialRef.GetAttrValue('Authority', 1))
         spatialRef.MorphToESRI()
-        file = open(temp_folder_path + '\extent_{0}.prj'.format(country), 'w')
+        file = open(os.path.join(temp_folder_path,'extent_{0}.prj'.format(country)), 'w')
         file.write(spatialRef.ExportToWkt())
         file.close()
 
@@ -112,8 +112,8 @@ def process_data(country, pgpath, pghost, pgport, pguser, pgpassword, pgdatabase
                     name = file.split(".tif")[0]
 
                     ghs_file_path = os.path.join(subdir, file)
-                    out_file_path = merge_folder_path + "\{0}_{1}.tif".format(name, country)
-                    country_mask = temp_folder_path + "\GADM_{0}.shp".format(country)
+                    out_file_path = os.path.join(merge_folder_path, "{0}_{1}.tif".format(name, country))
+                    country_mask = os.path.join(temp_folder_path, "GADM_{0}.shp".format(country))
 
                     # open raster and get its georeferencing information
                     dsr = gdal.Open(ghs_file_path, gdal.GA_ReadOnly)
@@ -158,7 +158,7 @@ def process_data(country, pgpath, pghost, pgport, pguser, pgpassword, pgdatabase
         print("------------------------------ PROCESSING SLOPE ------------------------------")
         print("Extracting slope for {0}".format(country))
         # Getting extent of ghs pop raster
-        data = gdal.Open(merge_folder_path + "\GHS_POP_1975_{0}.tif".format(country))
+        data = gdal.Open(os.path.join(merge_folder_path, "GHS_POP_1975_{0}.tif".format(country)))
         wkt = data.GetProjection()
         geoTransform = data.GetGeoTransform()
         minx = geoTransform[0]
@@ -169,44 +169,44 @@ def process_data(country, pgpath, pghost, pgport, pguser, pgpassword, pgdatabase
 
         print("Altering slope raster resolution to 250 meter")
         # Clipping slope and altering resolution
-        cutlinefile = temp_folder_path + "\GADM_{0}.shp".format(country)
-        srcfile = ancillary_data_folder_path +"\slope\slope_europe.tif"
-        dstfile = temp_folder_path + "\slope_250_{0}.tif".format(country)
+        cutlinefile = os.path.join(temp_folder_path,"GADM_{0}.shp".format(country))
+        srcfile = os.path.join(ancillary_data_folder_path,"slope","slope_europe.tif")
+        dstfile = os.path.join(temp_folder_path,"slope_250_{0}.tif".format(country))
         cmds = 'gdalwarp -s_srs EPSG:54009 -tr 250 250 -te {0} {1} {2} {3} -cutline {4} -srcnodata 255 -dstnodata 0 {5} {6}'\
             .format(minx, miny, maxx, maxy, cutlinefile, srcfile, dstfile)
         subprocess.call(cmds, shell=True)
 
         print("Recalculating slope raster values")
         # Recalculate slope raster values of 0 - 250 to real slope value 0 to 90 degrees
-        outfile = merge_folder_path + "\slope_{0}_finished_vers.tif".format(country)
+        outfile = os.path.join(merge_folder_path,"slope_{0}_finished_vers.tif".format(country))
         cmds = 'python {0}\gdal_calc.py -A {1} --outfile={2} --calc="numpy.arcsin((250-(A))/250)*180/numpy.pi" --NoDataValue=0'\
             .format(python_scripts_folder_path, dstfile, outfile)
         subprocess.call(cmds, shell=False)
 
         # Clipping lakes layer to country ----------------------------------------------------------------------------------
         print("------------------------------ Creating water layer for {0} ------------------------------".format(country))
-        clip_poly = temp_folder_path + "\extent_{0}.shp".format(country)
-        in_shp = ancillary_data_folder_path + "\eu_lakes.shp"
-        out_shp = temp_folder_path + "\eu_lakes_{0}.shp".format(country)
+        clip_poly = os.path.join(temp_folder_path,"extent_{0}.shp".format(country))
+        in_shp = os.path.join(ancillary_data_folder_path,"eu_lakes.shp")
+        out_shp = os.path.join(temp_folder_path,"eu_lakes_{0}.shp".format(country))
         cmd_shp_clip = "ogr2ogr -clipsrc {0} {1} {2} -nlt geometry".format(clip_poly, out_shp, in_shp)
         subprocess.call(cmd_shp_clip, shell=True)
 
         # Creating polygon grid that matches the population grid -----------------------------------------------------------
         print("------------------------------ Creating vector grid for {0} ------------------------------".format(country))
-        outpath = temp_folder_path + "\{0}_2015vector.shp".format(country)
+        outpath = os.path.join(temp_folder_path,"{0}_2015vector.shp".format(country))
         rasttovecgrid(outpath, minx, maxx, miny, maxy, 250, 250)
 
         # Creating polygon grid with larger grid size, to split the smaller grid and iterate in postgis --------------------
         print("------------------------------ Creating larger iteration vector grid for {0} ------------------------------"
               .format(country))
-        outpath = temp_folder_path + "\{0}_iteration_grid.shp".format(country)
+        outpath = os.path.join(temp_folder_path,"{0}_iteration_grid.shp".format(country))
         rasttovecgrid(outpath, minx, maxx, miny, maxy, 50000, 50000)
 
         # Extracting train stations for the chosen country
         print("------------------------------ Creating train stations for {0} ------------------------------"
               .format(country))
-        infile = ancillary_data_folder_path + "\european_train_stations\european_train_stations.shp"
-        outfile = temp_folder_path + "\european_train_stations.shp"
+        infile = os.path.join(ancillary_data_folder_path,"european_train_stations\european_train_stations.shp")
+        outfile = os.path.join(temp_folder_path,"european_train_stations.shp")
         country_code_dict = {'Denmark': 'DK', 'France': 'FR', 'Deutchland': 'DE'}
         cmds = "ogr2ogr -where country='{0}' {1} {2}".format(country_code_dict[country], outfile, infile)
         subprocess.call(cmds, shell=True)
@@ -214,8 +214,8 @@ def process_data(country, pgpath, pghost, pgport, pguser, pgpassword, pgdatabase
         # Extracting municipalities from gadm for the chosen country
         print("------------------------------ Creating municipality layer for {0} ------------------------------"
               .format(country))
-        infile = gadm_folder_path + "\gadm28_adm2.shp"
-        outfile = temp_folder_path + "\{0}_municipal.shp".format(country)
+        infile = os.path.join(gadm_folder_path,"gadm28_adm2.shp")
+        outfile = os.path.join(temp_folder_path,"{0}_municipal.shp".format(country))
         cmds = "ogr2ogr -where NAME_0='{0}' {1} {2}".format(country, outfile, infile)
         subprocess.call(cmds, shell=True)
 
@@ -287,14 +287,14 @@ def process_data(country, pgpath, pghost, pgport, pguser, pgpassword, pgdatabase
         print("------------------------------ CREATING MERGED TIFF FILES ------------------------------")
         # Merging files for 1975
         print("Merging files for 1975")
-        outfile = country_path + "\{0}.tif".format(1975)
-        original_tif_pop = merge_folder_path + "\GHS_POP_1975_{0}.tif".format(country)
-        water = merge_folder_path + "\{0}_water_cover.tif".format(country)
-        road_dist = merge_folder_path + "\{0}_roads.tif".format(country)
-        slope = merge_folder_path + "\slope_{0}_finished_vers.tif".format(country)
-        corine = merge_folder_path + "\{0}_corine1990.tif".format(country)
-        train = merge_folder_path + "\{0}_train_stations.tif".format(country)
-        municipal = merge_folder_path + "\{0}_municipality.tif".format(country)
+        outfile =          os.path.join(country_path , "{0}.tif".format(1975))
+        original_tif_pop = os.path.join(merge_folder_path , "GHS_POP_1975_{0}.tif".format(country))
+        water =            os.path.join(merge_folder_path , "{0}_water_cover.tif".format(country))
+        road_dist =        os.path.join(merge_folder_path , "{0}_roads.tif".format(country))
+        slope =            os.path.join(merge_folder_path , "slope_{0}_finished_vers.tif".format(country))
+        corine =           os.path.join(merge_folder_path , "{0}_corine1990.tif".format(country))
+        train =            os.path.join(merge_folder_path , "{0}_train_stations.tif".format(country))
+        municipal =        os.path.join(merge_folder_path , "{0}_municipality.tif".format(country))
         cmd_tif_merge = "python {0}\gdal_merge.py -o {1} -separate {2} {3} {4} {5} {6} {7} {8}"\
         .format(python_scripts_folder_path, outfile, original_tif_pop,
                 water, road_dist, slope, corine, train, municipal)
@@ -302,14 +302,14 @@ def process_data(country, pgpath, pghost, pgport, pguser, pgpassword, pgdatabase
 
         # Merging files for 1990
         print("Merging files for 1990")
-        outfile = country_path + "\{0}.tif".format(1990)
-        original_tif_pop = merge_folder_path + "\GHS_POP_1990_{0}.tif".format(country)
-        water = merge_folder_path + "\{0}_water_cover.tif".format(country)
-        road_dist = merge_folder_path + "\{0}_roads.tif".format(country)
-        slope = merge_folder_path + "\slope_{0}_finished_vers.tif".format(country)
-        corine = merge_folder_path + "\{0}_corine1990.tif".format(country)
-        train = merge_folder_path + "\{0}_train_stations.tif".format(country)
-        municipal = merge_folder_path + "\{0}_municipality.tif".format(country)
+        outfile =          os.path.join(country_path ,      "{0}.tif".format(1990))
+        original_tif_pop = os.path.join(merge_folder_path , "GHS_POP_1990_{0}.tif".format(country))
+        water =            os.path.join(merge_folder_path , "{0}_water_cover.tif".format(country))
+        road_dist =        os.path.join(merge_folder_path , "{0}_roads.tif".format(country))
+        slope =            os.path.join(merge_folder_path , "slope_{0}_finished_vers.tif".format(country))
+        corine =           os.path.join(merge_folder_path , "{0}_corine1990.tif".format(country))
+        train =            os.path.join(merge_folder_path , "{0}_train_stations.tif".format(country))
+        municipal =        os.path.join(merge_folder_path , "{0}_municipality.tif".format(country))
         cmd_tif_merge = "python {0}\gdal_merge.py -o {1} -separate {2} {3} {4} {5} {6} {7} {8}" \
             .format(python_scripts_folder_path, outfile, original_tif_pop,
                     water, road_dist, slope, corine, train, municipal)
@@ -317,14 +317,14 @@ def process_data(country, pgpath, pghost, pgport, pguser, pgpassword, pgdatabase
 
         # Merging files for 2000
         print("Merging files for 2000")
-        outfile = country_path + "\{0}.tif".format(2000)
-        original_tif_pop = merge_folder_path + "\GHS_POP_2000_{0}.tif".format(country)
-        water = merge_folder_path + "\{0}_water_cover.tif".format(country)
-        road_dist = merge_folder_path + "\{0}_roads.tif".format(country)
-        slope = merge_folder_path + "\slope_{0}_finished_vers.tif".format(country)
-        corine = merge_folder_path + "\{0}_corine2012.tif".format(country)
-        train = merge_folder_path + "\{0}_train_stations.tif".format(country)
-        municipal = merge_folder_path + "\{0}_municipality.tif".format(country)
+        outfile =          os.path.join(country_path ,      "{0}.tif".format(2000))
+        original_tif_pop = os.path.join(merge_folder_path , "GHS_POP_2000_{0}.tif".format(country))
+        water =            os.path.join(merge_folder_path , "{0}_water_cover.tif".format(country))
+        road_dist =        os.path.join(merge_folder_path , "{0}_roads.tif".format(country))
+        slope =            os.path.join(merge_folder_path , "slope_{0}_finished_vers.tif".format(country))
+        corine =           os.path.join(merge_folder_path , "{0}_corine2012.tif".format(country))
+        train =            os.path.join(merge_folder_path , "{0}_train_stations.tif".format(country))
+        municipal =        os.path.join(merge_folder_path , "{0}_municipality.tif".format(country))
         cmd_tif_merge = "python {0}\gdal_merge.py -o {1} -separate {2} {3} {4} {5} {6} {7} {8}" \
             .format(python_scripts_folder_path, outfile, original_tif_pop,
                     water, road_dist, slope, corine, train, municipal)
@@ -332,14 +332,14 @@ def process_data(country, pgpath, pghost, pgport, pguser, pgpassword, pgdatabase
 
         # Merging files for 2000
         print("Merging files for 2015")
-        outfile = country_path + "\{0}.tif".format(2015)
-        original_tif_pop = merge_folder_path + "\GHS_POP_2015_{0}.tif".format(country)
-        water = merge_folder_path + "\{0}_water_cover.tif".format(country)
-        road_dist = merge_folder_path + "\{0}_roads.tif".format(country)
-        slope = merge_folder_path + "\slope_{0}_finished_vers.tif".format(country)
-        corine = merge_folder_path + "\{0}_corine2012.tif".format(country)
-        train = merge_folder_path + "\{0}_train_stations.tif".format(country)
-        municipal = merge_folder_path + "\{0}_municipality.tif".format(country)
+        outfile =          os.path.join(country_path ,      "{0}.tif".format(2015))
+        original_tif_pop = os.path.join(merge_folder_path , "GHS_POP_2015_{0}.tif".format(country))
+        water =            os.path.join(merge_folder_path , "{0}_water_cover.tif".format(country))
+        road_dist =        os.path.join(merge_folder_path , "{0}_roads.tif".format(country))
+        slope =            os.path.join(merge_folder_path , "slope_{0}_finished_vers.tif".format(country))
+        corine =           os.path.join(merge_folder_path , "{0}_corine2012.tif".format(country))
+        train =            os.path.join(merge_folder_path , "{0}_train_stations.tif".format(country))
+        municipal =        os.path.join(merge_folder_path , "{0}_municipality.tif".format(country))
         cmd_tif_merge = "python {0}\gdal_merge.py -o {1} -separate {2} {3} {4} {5} {6} {7} {8}" \
             .format(python_scripts_folder_path, outfile, original_tif_pop,
                     water, road_dist, slope, corine, train, municipal)

@@ -3,7 +3,7 @@
 import os
 from process import process_data
 
-# ATTENSION ------------------------------------------------------------------------------------------------------------
+# ATTENTION ------------------------------------------------------------------------------------------------------------
 # Before running this script, a database should be created in postgres and the database information entered below, if
 # it's not the same. Furthermore, the Project_data folder, scound be placed in the same folder as the scripts
 # (main, process, import_to_postgres, postgres_to_shp, postgres_queries and rast_to_vec_grid)
@@ -45,29 +45,31 @@ pgdatabase = 'raster_database'
 
 # DIFFERENT PATHS ------------------------------------------------------------------------------------------------------
 # Get path to main script
-python_script_dir = os.path.dirname(os.path.abspath(__file__))
+python_script_dir =          os.path.dirname(os.path.abspath(__file__))
 
 # Paths for the data / folders in the Project_data folder --------------------------------------------------------------
 #path to ancillary data folder
-ancillary_data_folder_path = python_script_dir + "\Project_data\Ancillary_data"
+ancillary_data_folder_path = os.path.join(python_script_dir , "Project_data", "Ancillary_data")
 #path to GADM folder
-gadm_folder_path = python_script_dir + "\Project_data\GADM"
+gadm_folder_path =           os.path.join(python_script_dir , "Project_data", "GADM")
 #path to GHS folder
-ghs_folder_path = python_script_dir + "\Project_data\GHS"
+ghs_folder_path =            os.path.join(python_script_dir , "Project_data", "GHS")
 
 # Paths to storage during the data preparation (AUTOMATICALLY CREATED) -------------------------------------------------
 #path to temp folder - will contain temporary files
-temp_folder_path = python_script_dir + "\Temp"
+temp_folder_path =           os.path.join(python_script_dir , "Temp")
 #Files to be merged folder
-merge_folder_path = python_script_dir + "\Tif_to_merge"
+merge_folder_path =          os.path.join(python_script_dir , "Tif_to_merge")
 #path to data folder to store the final tif files
-finished_data_path = python_script_dir + "\Finished_data"
+finished_data_path =         os.path.join(python_script_dir , "Finished_data")
 
 # Other Paths to necessary python scripts and functions ----------------------------------------------------------------
 # path to folder containing gdal_calc.py and gdal_merge.py
-python_scripts_folder_path = r'C:\Users\thoma\Anaconda3\envs\kandidat\Scripts'
+# python_scripts_folder_path = r'C:\Users\thoma\Anaconda3\envs\kandidat\Scripts'
+python_scripts_folder_path = '/Library/Frameworks/GDAL.framework/Versions/2.2/Programs'
 #path to folder with gdal_rasterize.exe
-gdal_rasterize_path = r'C:\Users\thoma\Anaconda3\envs\kandidat\lib\site-packages\osgeo'
+# gdal_rasterize_path = r'C:\Users\thoma\Anaconda3\envs\kandidat\lib\site-packages\osgeo'
+gdal_rasterize_path = '/Library/Frameworks/GDAL.framework/Versions/2.2/Programs/'
 
 # Process all data -----------------------------------------------------------------------------------------------------
 process_data(country, pgpath, pghost, pgport, pguser, pgpassword, pgdatabase, ancillary_data_folder_path,
