@@ -13,7 +13,7 @@ from process import process_data
 # Project_data
 
 # Specify country to extract data from ---------------------------------------------------------------------------------
-country = 'France'
+country = 'Denmark'
 
 # choose processes to run ----------------------------------------------------------------------------------------------
 # Initial preparation of Population raster and slope ("yes" / "no")
@@ -36,12 +36,12 @@ init_merge_data = "yes"
 
 # Specify database information -----------------------------------------------------------------------------------------
 # path to postgresql bin folder
-pgpath = r';C:\Program Files\PostgreSQL\9.5\bin'
+pgpath = '/usr/local/bin/psql'
 pghost = 'localhost'
 pgport = '5432'
-pguser = 'postgres'
-pgpassword = 'postgres'
-pgdatabase = 'raster_database'
+pguser = 'carsten'
+pgpassword = ''
+pgdatabase = 'popnet'
 
 # DIFFERENT PATHS ------------------------------------------------------------------------------------------------------
 # Get path to main script
@@ -49,15 +49,15 @@ python_script_dir =          os.path.dirname(os.path.abspath(__file__))
 
 # Paths for the data / folders in the Project_data folder --------------------------------------------------------------
 #path to ancillary data folder
-ancillary_data_folder_path = os.path.join(python_script_dir , "Project_data", "Ancillary_data")
+ancillary_data_folder_path = os.path.join(python_script_dir , "data", "ancillary")
 #path to GADM folder
-gadm_folder_path =           os.path.join(python_script_dir , "Project_data", "GADM")
+gadm_folder_path =           os.path.join(python_script_dir , "data", "GADM")
 #path to GHS folder
-ghs_folder_path =            os.path.join(python_script_dir , "Project_data", "GHS")
+ghs_folder_path =            os.path.join(python_script_dir , "data", "GHS")
 
 # Paths to storage during the data preparation (AUTOMATICALLY CREATED) -------------------------------------------------
 #path to temp folder - will contain temporary files
-temp_folder_path =           os.path.join(python_script_dir , "Temp")
+temp_folder_path =           os.path.join(python_script_dir , "temp")
 #Files to be merged folder
 merge_folder_path =          os.path.join(python_script_dir , "Tif_to_merge")
 #path to data folder to store the final tif files

@@ -39,10 +39,11 @@ def process_data(country, pgpath, pghost, pgport, pguser, pgpassword, pgdatabase
         print("------------------------------ PROCESSING POPULATION RASTER ------------------------------")
         print("Extracting {0} from GADM data layer".format(country))
         # select country in GADM and write to new file
-        input_gadm_dataset = os.path.join(gadm_folder_path, "gadm28_adm0.shp")
+        input_gadm_dataset = os.path.join(gadm_folder_path, "gadm36_0.shp")
         output_country_shp = os.path.join(temp_folder_path,"GADM_{0}.shp".format(country))
-        sql_statement = "NAME_ENGLI='{0}'".format(country)
-        country_shp = 'ogr2ogr -where {0} -f "ESRI Shapefile"  {1} {2} -lco ENCODING=UTF-8'.format(sql_statement, output_country_shp, input_gadm_dataset)
+        sql_statement = '"NAME_0=\'{0}\'"'.format(country)
+        country_shp = 'ogr2ogr -where {0} -f "ESRI Shapefile"  {1} {2} -lco ENCODING=UTF-8'\
+            .format(sql_statement, output_country_shp, input_gadm_dataset)
         subprocess.call(country_shp, shell=True)
 
         # create bounding box around chosen country
@@ -143,10 +144,15 @@ def process_data(country, pgpath, pghost, pgport, pguser, pgpassword, pgdatabase
                         bottom = miny + (gt[5] - ((miny - gt[3]) % gt[5]))
                         top = maxy - (maxy - gt[3]) % gt[5]
 
-                        cmd_clip = """gdalwarp -te {0} {1} {2} {3} -tr {4} {5} -cutline {6} -srcnodata -3.4028234663852886e+38
-                                    -dstnodata 0 {7} {8}""".format(
+                        cmd_clip = 'gdalwarp -te {0} {1} {2} {3} -tr {4} {5} -cutline {6} -srcnodata -3.4028234663852886e+38 \
+                                    -dstnodata 0 {7} {8}'.format(
                         str(left), str(bottom), str(right), str(top), str(abs(gt[1])), str(abs(gt[5])),
                         country_mask, ghs_file_path, out_file_path)
+
+                        print(" ")
+                        print(cmd_clip)
+                        print(" ")
+
                         subprocess.call(cmd_clip, shell=True)
 
                         ft = lyr.GetNextFeature()
@@ -157,7 +163,7 @@ def process_data(country, pgpath, pghost, pgport, pguser, pgpassword, pgdatabase
         print("------------------------------ PROCESSING SLOPE ------------------------------")
         print("Extracting slope for {0}".format(country))
         # Getting extent of ghs pop raster
-        data = gdal.Open(os.path.join(merge_folder_path, "GHS_POP_1975_{0}.tif".format(country)))
+        data = gdal.Open(os.path.join(merge_folder_path, "GHS_POP_GPW41975_GLOBE_R2015A_54009_250_v1_0_{0}.tif".format(country)))
         wkt = data.GetProjection()
         geoTransform = data.GetGeoTransform()
         minx = geoTransform[0]
@@ -169,23 +175,31 @@ def process_data(country, pgpath, pghost, pgport, pguser, pgpassword, pgdatabase
         print("Altering slope raster resolution to 250 meter")
         # Clipping slope and altering resolution
         cutlinefile = os.path.join(temp_folder_path,"GADM_{0}.shp".format(country))
-        srcfile = os.path.join(ancillary_data_folder_path,"slope","slope_europe.tif")
+        srcfile = os.path.join(ancillary_data_folder_path,"slope","eudem_slop_3035_europe.tif")
         dstfile = os.path.join(temp_folder_path,"slope_250_{0}.tif".format(country))
-        cmds = 'gdalwarp -s_srs EPSG:54009 -tr 250 250 -te {0} {1} {2} {3} -cutline {4} -srcnodata 255 -dstnodata 0 {5} {6}'.format(minx, miny, maxx, maxy, cutlinefile, srcfile, dstfile)
+        cmds = 'gdalwarp -r average -s_srs EPSG:54009 -tr 250 250 -te {0} {1} {2} {3} -cutline {4} -srcnodata 255 -dstnodata 0 {5} {6}'.format(minx, miny, maxx, maxy, cutlinefile, srcfile, dstfile)
+
+        print(" ")
+        print(cmds)
+        print(" ")
+
+
         subprocess.call(cmds, shell=True)
 
         print("Recalculating slope raster values")
         # Recalculate slope raster values of 0 - 250 to real slope value 0 to 90 degrees
         outfile = os.path.join(merge_folder_path,"slope_{0}_finished_vers.tif".format(country))
-        cmds = 'gdal_calc.py -A {1} --outfile={2} --calc="numpy.arcsin((250-(A))/250)*180/numpy.pi" --NoDataValue=0'.format(dstfile, outfile)
+        cmds = 'gdal_calc.py -A {0} --outfile={1} --calc="numpy.arcsin((250-(A))/250)*180/numpy.pi" --NoDataValue=0'.format(dstfile, outfile)
         subprocess.call(cmds, shell=False)
 
         # Clipping lakes layer to country ----------------------------------------------------------------------------------
         print("------------------------------ Creating water layer for {0} ------------------------------".format(country))
         clip_poly = os.path.join(temp_folder_path,"extent_{0}.shp".format(country))
-        in_shp = os.path.join(ancillary_data_folder_path,"eu_lakes.shp")
+        in_shp = os.path.join(ancillary_data_folder_path,"EcrLak.sqlite")
         out_shp = os.path.join(temp_folder_path,"eu_lakes_{0}.shp".format(country))
         cmd_shp_clip = "ogr2ogr -clipsrc {0} {1} {2} -nlt geometry".format(clip_poly, out_shp, in_shp)
+
+        print(cmd_shp_clip)
         subprocess.call(cmd_shp_clip, shell=True)
 
         # Creating polygon grid that matches the population grid -----------------------------------------------------------

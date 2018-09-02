@@ -313,4 +313,7 @@ crashlytics-build.properties
 fabric.properties
 
 # anything in Carsten's data folder
-/data/*
+/data_scripts/data/*
+/data_scripts/temp/*
+/data_scripts/Tif_to_merge/*
+**/*.DS_Store
