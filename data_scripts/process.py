@@ -177,20 +177,17 @@ def process_data(country, pgpath, pghost, pgport, pguser, pgpassword, pgdatabase
         cutlinefile = os.path.join(temp_folder_path,"GADM_{0}.shp".format(country))
         srcfile = os.path.join(ancillary_data_folder_path,"slope","eudem_slop_3035_europe.tif")
         dstfile = os.path.join(temp_folder_path,"slope_250_{0}.tif".format(country))
-        cmds = 'gdalwarp -r average -s_srs EPSG:54009 -tr 250 250 -te {0} {1} {2} {3} -cutline {4} -srcnodata 255 -dstnodata 0 {5} {6}'.format(minx, miny, maxx, maxy, cutlinefile, srcfile, dstfile)
-
-        print(" ")
-        print(cmds)
-        print(" ")
-
+        cmds = 'gdalwarp -r average -te_srs EPSG:54009 -tr 250 250 -te {0} {1} {2} {3} -cutline {4} -srcnodata 255 -dstnodata 0 {5} {6}'.format(minx, miny, maxx, maxy, cutlinefile, srcfile, dstfile)
 
         subprocess.call(cmds, shell=True)
 
         print("Recalculating slope raster values")
         # Recalculate slope raster values of 0 - 250 to real slope value 0 to 90 degrees
         outfile = os.path.join(merge_folder_path,"slope_{0}_finished_vers.tif".format(country))
-        cmds = 'gdal_calc.py -A {0} --outfile={1} --calc="numpy.arcsin((250-(A))/250)*180/numpy.pi" --NoDataValue=0'.format(dstfile, outfile)
-        subprocess.call(cmds, shell=False)
+        cmd_reslope = 'gdal_calc.py -A {0} --outfile={1} --calc="numpy.arcsin((250-(A))/250)*180/numpy.pi" --NoDataValue=0'.format(dstfile, outfile)
+
+        # for some reason, this one doesn't work with a subprocess call:
+        os.system(cmd_reslope)
 
         # Clipping lakes layer to country ----------------------------------------------------------------------------------
         print("------------------------------ Creating water layer for {0} ------------------------------".format(country))
@@ -198,8 +195,6 @@ def process_data(country, pgpath, pghost, pgport, pguser, pgpassword, pgdatabase
         in_shp = os.path.join(ancillary_data_folder_path,"EcrLak.sqlite")
         out_shp = os.path.join(temp_folder_path,"eu_lakes_{0}.shp".format(country))
         cmd_shp_clip = "ogr2ogr -clipsrc {0} {1} {2} -nlt geometry".format(clip_poly, out_shp, in_shp)
-
-        print(cmd_shp_clip)
         subprocess.call(cmd_shp_clip, shell=True)
 
         # Creating polygon grid that matches the population grid -----------------------------------------------------------
@@ -225,7 +220,7 @@ def process_data(country, pgpath, pghost, pgport, pguser, pgpassword, pgdatabase
         # Extracting municipalities from gadm for the chosen country
         print("------------------------------ Creating municipality layer for {0} ------------------------------"
               .format(country))
-        infile = os.path.join(gadm_folder_path,"gadm28_adm2.shp")
+        infile = os.path.join(gadm_folder_path,"gadm36_adm2.shp")
         outfile = os.path.join(temp_folder_path,"{0}_municipal.shp".format(country))
         cmds = "ogr2ogr -where NAME_0='{0}' {1} {2}".format(country, outfile, infile)
         subprocess.call(cmds, shell=True)
