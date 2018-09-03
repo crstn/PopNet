@@ -4,7 +4,7 @@ def run_queries(landname, pgdatabase, pguser, pghost, pgpassword):
     country = landname.lower()
 
     #connect to postgres
-    conn = psycopg2.connect(database="raster_database", user="postgres", host="localhost", password="postgres")
+    conn = psycopg2.connect(database=pgdatabase, user=pguser, host=pghost, password=pgpassword)
     cur = conn.cursor()
 
     # Queries ----------------------------------------------------------------------------------------------------------
