@@ -8,48 +8,48 @@ def psqltoshp(country, pghost, pguser, pgpassword, pgdatabase, save_data_path):
     # exporting water cover from postgres
     print("Exporting water cover from postgres")
     path = os.path.join(save_data_path , "{0}_water_cover.shp".format(country))
-    cmd = """ogr2ogr -f 'ESRI Shapefile' {0} PG:'host={1} user={2} dbname={3} password={4}'
-        -sql 'SELECT id, water_cover, geom FROM {5}_cover_analysis'""".format(path, pghost, pguser, pgdatabase,
+    cmd = "ogr2ogr -f 'ESRI Shapefile' {0} PG:'host={1} user={2} dbname={3} password={4}' \
+        -sql 'SELECT id, water_cover, geom FROM {5}_cover_analysis'".format(path, pghost, pguser, pgdatabase,
                                                                             pgpassword, country)
     subprocess.call(cmd, shell=True)
 
     # exporting roads from postgres
     print("Exporting roads from postgres")
     path = os.path.join(save_data_path , "{0}_roads.shp".format(country))
-    cmd = """ogr2ogr -f 'ESRI Shapefile' {0} PG:'host={1} user={2} dbname={3} password={4}'
-        -sql 'SELECT id, rdist, geom FROM {5}_cover_analysis'""".format(path, pghost, pguser, pgdatabase,
+    cmd = "ogr2ogr -f 'ESRI Shapefile' {0} PG:'host={1} user={2} dbname={3} password={4}' \
+        -sql 'SELECT id, rdist, geom FROM {5}_cover_analysis'".format(path, pghost, pguser, pgdatabase,
                                                                       pgpassword, country)
     subprocess.call(cmd, shell=True)
 
     # exporting corine 1990 from postgres
     print("Exporting corine 1990 from postgres")
     path = os.path.join(save_data_path , "{0}_corine1990.shp".format(country))
-    cmd = """ogr2ogr -f 'ESRI Shapefile' {0} PG:'host={1} user={2} dbname={3} password={4}'
-            -sql 'SELECT id, corine_cover90, geom FROM {5}_cover_analysis'""".format(path, pghost, pguser, pgdatabase,
+    cmd = "ogr2ogr -f 'ESRI Shapefile' {0} PG:'host={1} user={2} dbname={3} password={4}' \
+            -sql 'SELECT id, corine_cover90, geom FROM {5}_cover_analysis'".format(path, pghost, pguser, pgdatabase,
                                                                                    pgpassword, country)
     subprocess.call(cmd, shell=True)
 
     # exporting corine 2012 from postgres
     print("Exporting corine 2012 from postgres")
     path = os.path.join(save_data_path , "{0}_corine2012.shp".format(country))
-    cmd = """ogr2ogr -f 'ESRI Shapefile' {0} PG:'host={1} user={2} dbname={3} password={4}'
-                -sql 'SELECT id, corine_cover, geom FROM {5}_cover_analysis'""".format(path, pghost, pguser, pgdatabase,
+    cmd = "ogr2ogr -f 'ESRI Shapefile' {0} PG:'host={1} user={2} dbname={3} password={4}' \
+                -sql 'SELECT id, corine_cover, geom FROM {5}_cover_analysis'".format(path, pghost, pguser, pgdatabase,
                                                                                      pgpassword, country)
     subprocess.call(cmd, shell=True)
 
     # exporting train stations from postgres
     print("Exporting train stations from postgres")
     path = os.path.join(save_data_path , "{0}_train_stations.shp".format(country))
-    cmd = """ogr2ogr -f 'ESRI Shapefile' {0} PG:'host={1} user={2} dbname={3} password={4}'
-                -sql 'SELECT id, station, geom FROM {5}_cover_analysis'""".format(path, pghost, pguser, pgdatabase,
+    cmd = "ogr2ogr -f 'ESRI Shapefile' {0} PG:'host={1} user={2} dbname={3} password={4}' \
+                -sql 'SELECT id, station, geom FROM {5}_cover_analysis'".format(path, pghost, pguser, pgdatabase,
                                                                                      pgpassword, country)
     subprocess.call(cmd, shell=True)
 
     # exporting municipality from postgres
     print("Exporting municipality information from postgres")
     path = os.path.join(save_data_path , "{0}_municipality.shp".format(country))
-    cmd = """ogr2ogr -f 'ESRI Shapefile' {0} PG:'host={1} user={2} dbname={3} password={4}'
-                -sql 'SELECT id, municipality, geom FROM {5}_cover_analysis'""".format(path, pghost, pguser, pgdatabase,
+    cmd = "ogr2ogr -f 'ESRI Shapefile' {0} PG:'host={1} user={2} dbname={3} password={4}' \
+                -sql 'SELECT id, municipality, geom FROM {5}_cover_analysis'".format(path, pghost, pguser, pgdatabase,
                                                                                      pgpassword, country)
     subprocess.call(cmd, shell=True)
 

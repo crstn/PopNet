@@ -10,11 +10,11 @@ def import_to_postgres(country, pgpath, pghost, pgport, pguser, pgpassword, pgda
 
 
     if overwrite:
-        print("Deleting old database table for fresh import. ♻️")
+        print("♻️ Deleting old database table for fresh import.")
         cmd = 'psql -d {0} -U {1} -c "DROP TABLE IF EXISTS {2}_2015vector, {2}_bbox, \
-            {2}_corine, {2}_corine90, {2}_cover_analysis, {2}_iteration_grid, {2}_lakes, \
+            {2}_corine, {2}_groads, {2}_corine90, {2}_cover_analysis, {2}_iteration_grid, {2}_lakes, \
             {2}_municipal, {2}_subdivided_ocean, {2}_train, {2}_water, \
-            {2}_adm;"'.format(pgdatabase, pguser, country)
+            {2}_adm, {2}_subdivided_municipal;"'.format(pgdatabase, pguser, country)
         os.system(cmd)
 
     # ----- Importing data to postgres ---------------------------------------------------------------------------------
@@ -70,43 +70,44 @@ def import_to_postgres(country, pgpath, pghost, pgport, pguser, pgpassword, pgda
     print("Importing vectorgrid to postgres")
     gridpath = os.path.join(temp_folder_path , "{0}_2015vector.shp".format(country))
     cmds = 'ogr2ogr --config PG_USE_COPY YES -gt 65536 -f PGDump /vsistdout/ \
-    {0} -a_srs "EPSG:54009" -lco GEOMETRY_NAME=geom -lco SCHEMA=public -lco \
-    CREATE_SCHEMA=OFF -lco SPATIAL_INDEX=OFF | psql -d {1} -U {2}'.format(gridpath, pgdatabase, pguser)
+       {0} -lco GEOMETRY_NAME=geom -lco SCHEMA=public -lco \
+       CREATE_SCHEMA=OFF -lco SPATIAL_INDEX=OFF | psql -d {1} -U {2} -q; \
+       psql -d {1} -U {2} -c "SELECT UpdateGeometrySRID(\'{3}_2015vector\',\'geom\',54009);"'.format(gridpath, pgdatabase, pguser, country.lower())
 
     os.system(cmds)
 
     # Loading iteration grid into postgres
     print("Importing iteration grid to postgres")
     ite_path = os.path.join(temp_folder_path , "{0}_iteration_grid.shp".format(country))
-    cmds = 'shp2pgsql -I -s 54009 {0} public.{1}_iteration_grid | psql -d {2} -U {3}'.format(ite_path, country, pgdatabase, pguser)
+    cmds = 'shp2pgsql -I -s 54009 {0} public.{1}_iteration_grid | psql -d {2} -U {3} -q'.format(ite_path, country, pgdatabase, pguser)
 
     os.system(cmds)
 
     # Loading gadm into postgres
     print("Importing GADM to postgres")
     gadmpath = os.path.join(temp_folder_path , "GADM_{0}.shp".format(country))
-    cmds = 'shp2pgsql -I -s 54009 {0} public.{1}_adm | psql -d {2} -U {3}'.format(gadmpath, country, pgdatabase, pguser)
+    cmds = 'shp2pgsql -I -s 54009 {0} public.{1}_adm | psql -d {2} -U {3} -q'.format(gadmpath, country, pgdatabase, pguser)
 
     os.system(cmds)
 
     # Loading water into postgres
     print("Importing water to postgres")
     lakespath = os.path.join(temp_folder_path , "eu_lakes_{0}.shp".format(country))
-    cmds = 'shp2pgsql -I -s 54009 {0} public.{1}_lakes | psql -d {2} -U {3}'.format(lakespath, country, pgdatabase, pguser)
+    cmds = 'shp2pgsql -I -s 54009 {0} public.{1}_lakes | psql -d {2} -U {3} -q'.format(lakespath, country, pgdatabase, pguser)
 
     os.system(cmds)
 
     # Loading groads into postgres
     print("Importing roads to postgres")
     roadpath = os.path.join(ancillary_data_folder_path , "groads_europe", "gROADS-v1-europe.shp")
-    cmds = 'shp2pgsql -I -s 4326 {0} public.{1}_groads | psql -d {2} -U {3}'.format(roadpath, country, pgdatabase, pguser)
+    cmds = 'shp2pgsql -I -s 4326 {0} public.{1}_groads | psql -d {2} -U {3} -q'.format(roadpath, country, pgdatabase, pguser)
 
     os.system(cmds)
 
     # Loading municipalities into postgres
     print("Importing municipalities to postgres")
     munipath = os.path.join(temp_folder_path , "{0}_municipal.shp".format(country))
-    cmds = 'shp2pgsql -I -s 54009 {0} public.{1}_municipal | psql -d {2} -U {3}'.format(munipath, country, pgdatabase, pguser)
+    cmds = 'shp2pgsql -I -s 54009 {0} public.{1}_municipal | psql -d {2} -U {3} -q'.format(munipath, country, pgdatabase, pguser)
 
     #subprocess.call(cmds, shell=True)
     os.system(cmds)

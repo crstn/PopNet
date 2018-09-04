@@ -217,9 +217,11 @@ def process_data(country, pgpath, pghost, pgport, pguser, pgpassword, pgdatabase
         print("------------------------------ Creating water layer for {0} ------------------------------".format(country))
         clip_poly = os.path.join(temp_folder_path,"extent_{0}.shp".format(country))
         clip_layer = "extent_{0}".format(country)
-        in_shp = os.path.join(ancillary_data_folder_path , "ErcLak.shp")
+        in_shp = os.path.join(ancillary_data_folder_path , "eu_lakes.shp")
         out_shp = os.path.join(temp_folder_path,"eu_lakes_{0}.shp".format(country))
         cmd_shp_clip = "ogr2ogr -overwrite -clipsrc {0} -clipsrclayer {1} {2} {3} -nlt GEOMETRY".format(clip_poly, clip_layer, out_shp, in_shp)
+
+        print (cmd_shp_clip) 
 
         if (not os.path.exists(out_shp)) or (overwrite):
             subprocess.call(cmd_shp_clip, shell=True)

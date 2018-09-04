@@ -81,7 +81,7 @@ def run_queries(landname, pgdatabase, pguser, pghost, pgpassword):
         print("Creating {0} subdivided municipality table".format(country))
         # create subdivided municipal
         cur.execute(
-            "CREATE TABLE {0}_subdivided_municipal AS SELECT id_2, ST_Subdivide({0}_municipal.geom, 40) AS geom FROM {0}_municipal;".format(
+            "CREATE TABLE {0}_subdivided_municipal AS SELECT gid_2, ST_Subdivide({0}_municipal.geom, 40) AS geom FROM {0}_municipal;".format(
                 country))
         conn.commit()
     else:
