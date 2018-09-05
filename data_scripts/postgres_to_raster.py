@@ -2,6 +2,7 @@ import os
 import shutil
 import subprocess
 import gdal
+from debug_decorator import dump_args
 
 def psqltoshp(country, pghost, pguser, pgpassword, pgdatabase, save_data_path):
 
@@ -53,6 +54,8 @@ def psqltoshp(country, pghost, pguser, pgpassword, pgdatabase, save_data_path):
                                                                                      pgpassword, country)
     subprocess.call(cmd, shell=True)
 
+
+@dump_args
 def shptoraster(country, gdal_rasterize_path, xres, yres, save_data_path, merge_folder_path):
     # Getting extent of ghs pop raster
     data = gdal.Open(os.path.join(merge_folder_path , "GHS_POP_1975_{0}.tif".format(country)))

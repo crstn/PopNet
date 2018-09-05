@@ -64,6 +64,7 @@ merge_folder_path =          os.path.join(python_script_dir , "Tif_to_merge")
 finished_data_path =         os.path.join(python_script_dir , "Finished_data")
 
 
+
 # Process all data -----------------------------------------------------------------------------------------------------
 process_data(country, pgpath, pghost, pgport, pguser, pgpassword, pgdatabase, ancillary_data_folder_path,
              gadm_folder_path, ghs_folder_path, temp_folder_path, merge_folder_path, finished_data_path,
