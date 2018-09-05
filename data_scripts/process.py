@@ -221,8 +221,6 @@ def process_data(country, pgpath, pghost, pgport, pguser, pgpassword, pgdatabase
         out_shp = os.path.join(temp_folder_path,"eu_lakes_{0}.shp".format(country))
         cmd_shp_clip = "ogr2ogr -overwrite -clipsrc {0} -clipsrclayer {1} {2} {3} -nlt GEOMETRY".format(clip_poly, clip_layer, out_shp, in_shp)
 
-        print (cmd_shp_clip) 
-
         if (not os.path.exists(out_shp)) or (overwrite):
             subprocess.call(cmd_shp_clip, shell=True)
         else:
@@ -282,49 +280,6 @@ def process_data(country, pgpath, pghost, pgport, pguser, pgpassword, pgdatabase
         else:
             print("✔ already done.")
 
-
-        # Adding postgis and srs 54009 to postgres if it doesn't exist -----------------------------------------------------
-        # connect to postgres
-        conn = psycopg2.connect(database=pgdatabase, user=pguser, host=pghost, password=pgpassword)
-        cur = conn.cursor()
-
-        # check for and add postgis extension if not existing
-        cur.execute("""SELECT * FROM pg_available_extensions
-                    WHERE name LIKE 'postgis';""")
-        check_postgis = cur.rowcount
-        if check_postgis == 0:
-            print("Adding extension postgis")
-            cur.execute("CREATE EXTENSION postgis;")
-            conn.commit()
-
-        # Check for and add srid 54009 if not existing
-        cur.execute("SELECT * From spatial_ref_sys WHERE srid = 54009;")
-        check_srid = cur.rowcount
-        if check_srid == 0:
-            print("Adding SRID 54009 to postgres")
-            projs = '"World_Mollweide"'
-            geogcs = '"GCS_WGS_1984"'
-            datum = '"WGS_1984"'
-            spheroid = '"WGS_1984"'
-            primem = '"Greenwich"'
-            unit_degree = '"Degree"'
-            projection = '"Mollweide"'
-            param_easting = '"False_Easting"'
-            param_northing = '"False_Northing"'
-            param_central = '"Central_Meridian"'
-            unit_meter = '"Meter"'
-            authority = '"ESPG","54009"'
-            cur.execute("""INSERT into spatial_ref_sys (srid, auth_name, auth_srid, proj4text, srtext) values
-            ( 54009, 'ESRI', 54009, '+proj=moll +lon_0=0 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs ',
-            'PROJCS[{0},GEOGCS[{1},DATUM[{2},SPHEROID[{3},6378137,298.257223563]],
-            PRIMEM[{4},0],UNIT[{5},0.017453292519943295]],PROJECTION[{6}],PARAMETER[{7},0],
-            PARAMETER[{8},0],PARAMETER[{9},0],UNIT[{10},1],AUTHORITY[{11}]]');"""
-                        .format(projs, geogcs, datum, spheroid, primem, unit_degree, projection,
-                                param_easting, param_northing, param_central, unit_meter, authority))
-            conn.commit()
-        # closing connection
-        cur.close()
-        conn.close()
 
     # Importing data to postgres--------------------------------------------------------------------------------------
     if init_import_to_postgres == "yes":

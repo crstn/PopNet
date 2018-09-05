@@ -4,18 +4,60 @@
 import os
 import ogr
 import subprocess
+import psycopg2
 
 def import_to_postgres(country, pgpath, pghost, pgport, pguser, pgpassword, pgdatabase,
                        temp_folder_path, ancillary_data_folder_path, overwrite=True):
 
 
     if overwrite:
-        print("♻️ Deleting old database table for fresh import.")
-        cmd = 'psql -d {0} -U {1} -c "DROP TABLE IF EXISTS {2}_2015vector, {2}_bbox, \
-            {2}_corine, {2}_groads, {2}_corine90, {2}_cover_analysis, {2}_iteration_grid, {2}_lakes, \
-            {2}_municipal, {2}_subdivided_ocean, {2}_train, {2}_water, \
-            {2}_adm, {2}_subdivided_municipal;"'.format(pgdatabase, pguser, country)
+        print("♻️ Deleting old database tables for fresh import.")
+
+        cmd = 'dropdb {0}'.format(pgdatabase)
         os.system(cmd)
+
+        cmd = 'createdb -O {0} {1}'.format(pguser, pgdatabase)
+        os.system(cmd)
+
+        cmd = 'psql -d {0} -U {1} -c "create extension postgis;"'.format(pgdatabase, pguser)
+        os.system(cmd)
+
+
+        # Adding EPSG:54009 to postgres if it doesn't exist -----------------------------------------------------
+        # connect to postgres
+        conn = psycopg2.connect(database=pgdatabase, user=pguser, host=pghost, password=pgpassword)
+        cur = conn.cursor()
+
+        # Check for and add srid 54009 if not existing
+        cur.execute("SELECT * From spatial_ref_sys WHERE srid = 54009;")
+        check_srid = cur.rowcount
+        if check_srid == 0:
+            print("Adding SRID 54009 to postgres")
+            projs = '"World_Mollweide"'
+            geogcs = '"GCS_WGS_1984"'
+            datum = '"WGS_1984"'
+            spheroid = '"WGS_1984"'
+            primem = '"Greenwich"'
+            unit_degree = '"Degree"'
+            projection = '"Mollweide"'
+            param_easting = '"False_Easting"'
+            param_northing = '"False_Northing"'
+            param_central = '"Central_Meridian"'
+            unit_meter = '"Meter"'
+            authority = '"ESPG","54009"'
+            cur.execute("""INSERT into spatial_ref_sys (srid, auth_name, auth_srid, proj4text, srtext) values
+            ( 54009, 'ESRI', 54009, '+proj=moll +lon_0=0 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs ',
+            'PROJCS[{0},GEOGCS[{1},DATUM[{2},SPHEROID[{3},6378137,298.257223563]],
+            PRIMEM[{4},0],UNIT[{5},0.017453292519943295]],PROJECTION[{6}],PARAMETER[{7},0],
+            PARAMETER[{8},0],PARAMETER[{9},0],UNIT[{10},1],AUTHORITY[{11}]]');"""
+                        .format(projs, geogcs, datum, spheroid, primem, unit_degree, projection,
+                                param_easting, param_northing, param_central, unit_meter, authority))
+            conn.commit()
+        # closing connection
+        cur.close()
+        conn.close()
+
+
 
     # ----- Importing data to postgres ---------------------------------------------------------------------------------
     # Importing corine layers by quering data inside country extent
@@ -42,7 +84,7 @@ def import_to_postgres(country, pgpath, pghost, pgport, pguser, pgpassword, pgda
     clc12path = os.path.join(ancillary_data_folder_path , "corine", "clc12_Version_18_5a_sqLite", "clc12_Version_18_5.sqlite")
     cmds = 'ogr2ogr -overwrite -lco GEOMETRY_NAME=geom -lco SCHEMA=public -f "PostgreSQL" \
     PG:"host={0} port={1} user={2} dbname={3} password={4}" \
-    -a_srs "EPSG:3035" {5} -sql "SELECT * FROM clc12_Version_18_5 \
+    -t_srs "EPSG:3035" {5} -sql "SELECT * FROM clc12_Version_18_5 \
     WHERE code_12 = 124 OR code_12 = 121 OR code_12 = 311 OR code_12 = 312 OR code_12 = 313" \
     -spat {6} {7} {8} {9} -nln {10}_corine'.format(pghost, pgport, pguser, pgdatabase, pgpassword, clc12path, xmin, ymin, xmax, ymax, country)
     subprocess.call(cmds, shell=True)
@@ -52,7 +94,7 @@ def import_to_postgres(country, pgpath, pghost, pgport, pguser, pgpassword, pgda
     clc90path = os.path.join(ancillary_data_folder_path , "corine", "clc90_Version_18_5_sqlite", "clc90_Version_18_5.sqlite")
     cmds = 'ogr2ogr -overwrite -lco GEOMETRY_NAME=geom -lco SCHEMA=public -f "PostgreSQL" \
     PG:"host={0} port={1} user={2} dbname={3} password={4}" \
-    -a_srs "EPSG:3035" {5} -sql "SELECT * FROM clc90_Version_18_5 \
+    -t_srs "EPSG:3035" {5} -sql "SELECT * FROM clc90_Version_18_5 \
     WHERE code_90 = 124 OR code_90 = 121 OR code_90 = 311 OR code_90 = 312 OR code_90 = 313" \
     -spat {6} {7} {8} {9} -nln {10}_corine90'.format(pghost, pgport, pguser, pgdatabase, pgpassword, clc90path, xmin, ymin, xmax, ymax, country)
     subprocess.call(cmds, shell=True)
@@ -86,28 +128,28 @@ def import_to_postgres(country, pgpath, pghost, pgport, pguser, pgpassword, pgda
     # Loading gadm into postgres
     print("Importing GADM to postgres")
     gadmpath = os.path.join(temp_folder_path , "GADM_{0}.shp".format(country))
-    cmds = 'shp2pgsql -I -s 54009 {0} public.{1}_adm | psql -d {2} -U {3} -q'.format(gadmpath, country, pgdatabase, pguser)
+    cmds = 'shp2pgsql -I -s 4326:54009 {0} public.{1}_adm | psql -d {2} -U {3} -q'.format(gadmpath, country, pgdatabase, pguser)
 
     os.system(cmds)
 
     # Loading water into postgres
     print("Importing water to postgres")
     lakespath = os.path.join(temp_folder_path , "eu_lakes_{0}.shp".format(country))
-    cmds = 'shp2pgsql -I -s 54009 {0} public.{1}_lakes | psql -d {2} -U {3} -q'.format(lakespath, country, pgdatabase, pguser)
+    cmds = 'shp2pgsql -I -s 4326:54009 {0} public.{1}_lakes | psql -d {2} -U {3} -q'.format(lakespath, country, pgdatabase, pguser)
 
     os.system(cmds)
 
     # Loading groads into postgres
     print("Importing roads to postgres")
     roadpath = os.path.join(ancillary_data_folder_path , "groads_europe", "gROADS-v1-europe.shp")
-    cmds = 'shp2pgsql -I -s 4326 {0} public.{1}_groads | psql -d {2} -U {3} -q'.format(roadpath, country, pgdatabase, pguser)
+    cmds = 'shp2pgsql -I -s 4326:54009 {0} public.{1}_groads | psql -d {2} -U {3} -q'.format(roadpath, country, pgdatabase, pguser)
 
     os.system(cmds)
 
     # Loading municipalities into postgres
     print("Importing municipalities to postgres")
     munipath = os.path.join(temp_folder_path , "{0}_municipal.shp".format(country))
-    cmds = 'shp2pgsql -I -s 54009 {0} public.{1}_municipal | psql -d {2} -U {3} -q'.format(munipath, country, pgdatabase, pguser)
+    cmds = 'shp2pgsql -I -s 4326:54009 {0} public.{1}_municipal | psql -d {2} -U {3} -q'.format(munipath, country, pgdatabase, pguser)
 
     #subprocess.call(cmds, shell=True)
     os.system(cmds)

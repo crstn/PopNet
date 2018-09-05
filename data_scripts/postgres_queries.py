@@ -81,7 +81,7 @@ def run_queries(landname, pgdatabase, pguser, pghost, pgpassword):
         print("Creating {0} subdivided municipality table".format(country))
         # create subdivided municipal
         cur.execute(
-            "CREATE TABLE {0}_subdivided_municipal AS SELECT gid_2, ST_Subdivide({0}_municipal.geom, 40) AS geom FROM {0}_municipal;".format(
+            "CREATE TABLE {0}_subdivided_municipal AS SELECT gid, ST_Subdivide({0}_municipal.geom, 40) AS geom FROM {0}_municipal;".format(
                 country))
         conn.commit()
     else:
@@ -327,12 +327,25 @@ def run_queries(landname, pgdatabase, pguser, pghost, pgpassword):
 
     # Calculating road distance ----------------------------------------------------------------------------------------
     print("---------- Calculating road distance ----------")
+    print("Remove roads with invalid geometries")
+
+    conn = psycopg2.connect(database=pgdatabase, user=pguser, host=pghost, password=pgpassword)
+    cur = conn.cursor()
+
+    # Check for and add srid 54009 if not existing
+    cur.execute("SELECT gid FROM denmark_groads WHERE ST_isValid(geom) = False;")
+    if cur.rowcount > 0:
+        print(str(cur.rowcount) + " invalid road geometries... removing them.")
+        cur.execute("DELETE FROM denmark_groads WHERE ST_isValid(geom) = False;")
+
+        conn.commit()
+
     # start total query time timer
     start_query_time = time.time()
     print("Creating table with roads within the country")
     #Creating table with roads within the country
-    cur.execute("""CREATE TABLE {0}_iterate_roads AS (SELECT {0}_groads.gid, ST_Transform(ST_SetSRID({0}_groads.geom, 4326), 54009) AS geom FROM {0}_groads, {0}_adm
-                WHERE ST_DWithin({0}_adm.geom, ST_Transform(ST_SetSRID({0}_groads.geom, 4326), 54009), 1));""".format(country))  # 1.10 min
+    cur.execute("""CREATE TABLE {0}_iterate_roads AS (SELECT {0}_groads.gid, {0}_groads.geom FROM {0}_groads, {0}_adm
+                WHERE ST_DWithin({0}_adm.geom, {0}_groads.geom, 1));""".format(country))  # 1.10 min
 
     # creating index on roads table
     cur.execute("CREATE INDEX {0}_iterate_roads_gix ON {0}_iterate_roads USING GIST (geom);".format(country))  # 21 ms
@@ -622,10 +635,13 @@ def run_queries(landname, pgdatabase, pguser, pghost, pgpassword):
             # start single chunk query time timer
             t0 = time.time()
 
-            cur.execute("""WITH a AS (SELECT id_2, id FROM {0}_subdivided_municipal, chunk_nr{1} WHERE ST_Intersects(chunk_nr{1}.geom, {0}_subdivided_municipal.geom))
-                        UPDATE {0}_cover_analysis SET municipality = a.id_2
-                        FROM a
-                        WHERE a.id = {0}_cover_analysis.id;""".format(country, chunk))
+            cur.execute("""WITH a AS (SELECT gid, id
+                                      FROM {0}_subdivided_municipal, chunk_nr{1}
+                                      WHERE ST_Intersects(chunk_nr{1}.geom, {0}_subdivided_municipal.geom))
+                           UPDATE {0}_cover_analysis
+                           SET municipality = a.gid
+                           FROM a
+                           WHERE a.gid = {0}_cover_analysis.id;""".format(country, chunk))
             conn.commit()
 
             # Drop chunk_nr table
