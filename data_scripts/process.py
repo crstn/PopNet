@@ -314,7 +314,7 @@ def process_data(country, pgpath, pghost, pgport, pguser, pgpassword, pgdatabase
         # Merging files for 1975
         print("Merging files for 1975")
         outfile =          os.path.join(country_path , "{0}.tif".format(1975))
-        original_tif_pop = os.path.join(merge_folder_path , "GHS_POP_1975_{0}.tif".format(country))
+        original_tif_pop = os.path.join(merge_folder_path , "GHS_POP_GPW41975_GLOBE_R2015A_54009_250_v1_0_{0}.tif".format(country))
         water =            os.path.join(merge_folder_path , "{0}_water_cover.tif".format(country))
         road_dist =        os.path.join(merge_folder_path , "{0}_roads.tif".format(country))
         slope =            os.path.join(merge_folder_path , "slope_{0}_finished_vers.tif".format(country))
@@ -323,12 +323,12 @@ def process_data(country, pgpath, pghost, pgport, pguser, pgpassword, pgdatabase
         municipal =        os.path.join(merge_folder_path , "{0}_municipality.tif".format(country))
         cmd_tif_merge = "gdal_merge.py -o {0} -separate {1} {2} {3} {4} {5} {6} {7}".format(outfile, original_tif_pop,
                 water, road_dist, slope, corine, train, municipal)
-        subprocess.call(cmd_tif_merge, shell=False)
+        os.system(cmd_tif_merge)
 
         # Merging files for 1990
         print("Merging files for 1990")
         outfile =          os.path.join(country_path ,      "{0}.tif".format(1990))
-        original_tif_pop = os.path.join(merge_folder_path , "GHS_POP_1990_{0}.tif".format(country))
+        original_tif_pop = os.path.join(merge_folder_path , "GHS_POP_GPW41990_GLOBE_R2015A_54009_250_v1_0_{0}.tif".format(country))
         water =            os.path.join(merge_folder_path , "{0}_water_cover.tif".format(country))
         road_dist =        os.path.join(merge_folder_path , "{0}_roads.tif".format(country))
         slope =            os.path.join(merge_folder_path , "slope_{0}_finished_vers.tif".format(country))
@@ -337,12 +337,12 @@ def process_data(country, pgpath, pghost, pgport, pguser, pgpassword, pgdatabase
         municipal =        os.path.join(merge_folder_path , "{0}_municipality.tif".format(country))
         cmd_tif_merge = "gdal_merge.py -o {0} -separate {1} {2} {3} {4} {5} {6} {7}" .format(outfile,
             original_tif_pop, water, road_dist, slope, corine, train, municipal)
-        subprocess.call(cmd_tif_merge, shell=False)
+        os.system(cmd_tif_merge)
 
         # Merging files for 2000
         print("Merging files for 2000")
         outfile =          os.path.join(country_path ,      "{0}.tif".format(2000))
-        original_tif_pop = os.path.join(merge_folder_path , "GHS_POP_2000_{0}.tif".format(country))
+        original_tif_pop = os.path.join(merge_folder_path , "GHS_POP_GPW42000_GLOBE_R2015A_54009_250_v1_0_{0}.tif".format(country))
         water =            os.path.join(merge_folder_path , "{0}_water_cover.tif".format(country))
         road_dist =        os.path.join(merge_folder_path , "{0}_roads.tif".format(country))
         slope =            os.path.join(merge_folder_path , "slope_{0}_finished_vers.tif".format(country))
@@ -351,12 +351,12 @@ def process_data(country, pgpath, pghost, pgport, pguser, pgpassword, pgdatabase
         municipal =        os.path.join(merge_folder_path , "{0}_municipality.tif".format(country))
         cmd_tif_merge = "gdal_merge.py -o {0} -separate {1} {2} {3} {4} {5} {6} {7}".format(outfile,
             original_tif_pop, water, road_dist, slope, corine, train, municipal)
-        subprocess.call(cmd_tif_merge, shell=False)
+        os.system(cmd_tif_merge)
 
         # Merging files for 2000
         print("Merging files for 2015")
         outfile =          os.path.join(country_path ,      "{0}.tif".format(2015))
-        original_tif_pop = os.path.join(merge_folder_path , "GHS_POP_2015_{0}.tif".format(country))
+        original_tif_pop = os.path.join(merge_folder_path , "GHS_POP_GPW42015_GLOBE_R2015A_54009_250_v1_0_{0}.tif".format(country))
         water =            os.path.join(merge_folder_path , "{0}_water_cover.tif".format(country))
         road_dist =        os.path.join(merge_folder_path , "{0}_roads.tif".format(country))
         slope =            os.path.join(merge_folder_path , "slope_{0}_finished_vers.tif".format(country))
@@ -365,7 +365,7 @@ def process_data(country, pgpath, pghost, pgport, pguser, pgpassword, pgdatabase
         municipal =        os.path.join(merge_folder_path , "{0}_municipality.tif".format(country))
         cmd_tif_merge = "gdal_merge.py -o {0} -separate {1} {2} {3} {4} {5} {6} {7}".format(outfile,
             original_tif_pop, water, road_dist, slope, corine, train, municipal)
-        subprocess.call(cmd_tif_merge, shell=False)
+        os.system(cmd_tif_merge)
 
     # stop total algorithm time timer ----------------------------------------------------------------------------------
     stop_total_algorithm_timer = time.time()

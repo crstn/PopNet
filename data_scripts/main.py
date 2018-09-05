@@ -28,9 +28,9 @@ init_run_queries = "no"
 #one_train_buffer = "yes", 10000
 
 # export data from postgres? ("yes" / "no")
-init_export_data = "yes"
+init_export_data = "no"
 # rasterize data from postgres? ("yes" / "no")
-init_rasterize_data = "yes"
+init_rasterize_data = "no"
 # Merge data from postgres? ("yes" / "no")
 init_merge_data = "yes"
 
@@ -38,7 +38,7 @@ init_merge_data = "yes"
 # path to postgresql bin folder
 pgpath = '/usr/local/bin/psql'
 pghost = 'localhost'
-pgport = '5432' 
+pgport = '5432'
 pguser = 'carsten'
 pgpassword = ''
 pgdatabase = 'popnet'
