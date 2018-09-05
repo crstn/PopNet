@@ -299,6 +299,13 @@ def process_data(country, pgpath, pghost, pgport, pguser, pgpassword, pgdatabase
     # Rasterize layers from postgres -----------------------------------------------------------------------------------
     if init_rasterize_data == "yes":
         print("------------------------------------ RASTERIZING DATA ------------------------------------")
+        print(country)
+        print(pghost)
+        print(pguser)
+        print(pgpassword)
+        print(pgdatabase)
+        print(merge_folder_path)
+
         shptoraster(country, 250, 250, temp_folder_path, merge_folder_path)
 
     # Merging all ghs files into one multiband raster ------------------------------------------------------------------

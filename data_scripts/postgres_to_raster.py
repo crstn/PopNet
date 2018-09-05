@@ -4,6 +4,9 @@ import subprocess
 import gdal
 from debug_decorator import dump_args
 
+
+
+@dump_args
 def psqltoshp(country, pghost, pguser, pgpassword, pgdatabase, save_data_path):
 
     # exporting water cover from postgres
@@ -56,9 +59,9 @@ def psqltoshp(country, pghost, pguser, pgpassword, pgdatabase, save_data_path):
 
 
 @dump_args
-def shptoraster(country, gdal_rasterize_path, xres, yres, save_data_path, merge_folder_path):
+def shptoraster(country, xres, yres, save_data_path, merge_folder_path):
     # Getting extent of ghs pop raster
-    data = gdal.Open(os.path.join(merge_folder_path , "GHS_POP_1975_{0}.tif".format(country)))
+    data = gdal.Open(os.path.join(merge_folder_path , "GHS_POP_GPW41975_GLOBE_R2015A_54009_250_v1_0_{0}.tif".format(country)))
     wkt = data.GetProjection()
     geoTransform = data.GetGeoTransform()
     minx = geoTransform[0]
@@ -71,40 +74,40 @@ def shptoraster(country, gdal_rasterize_path, xres, yres, save_data_path, merge_
     print("Rasterizing water_cover layer")
     src_file = os.path.join(save_data_path , "{0}_water_cover.shp".format(country))
     dst_file = os.path.join(merge_folder_path , "{0}_water_cover.tif".format(country))
-    cmd = '{0}\gdal_rasterize.exe -a WATER_COVE -te {1} {2} {3} {4} -tr {5} {6} {7} {8}'.format(gdal_rasterize_path, minx, miny, maxx, maxy, xres, yres, src_file, dst_file)
+    cmd = 'gdal_rasterize -a WATER_COVE -te {0} {1} {2} {3} -tr {4} {5} {6} {7}'.format(minx, miny, maxx, maxy, xres, yres, src_file, dst_file)
     subprocess.call(cmd, shell=True)
 
     # Rasterizing roads layer
     print("Rasterizing roads layer")
     src_file = os.path.join(save_data_path , "{0}_roads.shp".format(country))
     dst_file = os.path.join(merge_folder_path , "{0}_roads.tif".format(country))
-    cmd = '{0}\gdal_rasterize.exe -a RDIST -te {1} {2} {3} {4} -tr {5} {6} {7} {8}'.format(gdal_rasterize_path, minx, miny, maxx, maxy, xres, yres, src_file, dst_file)
+    cmd = 'gdal_rasterize -a RDIST -te {0} {1} {2} {3} -tr {4} {5} {6} {7}'.format(minx, miny, maxx, maxy, xres, yres, src_file, dst_file)
     subprocess.call(cmd, shell=True)
 
     # Rasterizing corine 1990 layer
     print("Rasterizing corine 1990 layer")
     src_file = os.path.join(save_data_path , "{0}_corine1990.shp".format(country))
     dst_file = os.path.join(merge_folder_path , "{0}_corine1990.tif".format(country))
-    cmd = '{0}\gdal_rasterize.exe -a CORINE_COV -te {1} {2} {3} {4} -tr {5} {6} {7} {8}'.format(gdal_rasterize_path, minx, miny, maxx, maxy, xres, yres, src_file, dst_file)
+    cmd = 'gdal_rasterize -a CORINE_COV -te {0} {1} {2} {3} -tr {4} {5} {6} {7}'.format(minx, miny, maxx, maxy, xres, yres, src_file, dst_file)
     subprocess.call(cmd, shell=True)
 
     # Rasterizing corine 2012 layer
     print("Rasterizing corine 2012 layer")
     src_file = os.path.join(save_data_path , "{0}_corine2012.shp".format(country))
     dst_file = os.path.join(merge_folder_path , "{0}_corine2012.tif".format(country))
-    cmd = '{0}\gdal_rasterize.exe -a CORINE_COV -te {1} {2} {3} {4} -tr {5} {6} {7} {8}'.format(gdal_rasterize_path, minx, miny, maxx, maxy, xres, yres, src_file, dst_file)
+    cmd = 'gdal_rasterize -a CORINE_COV -te {0} {1} {2} {3} -tr {4} {5} {6} {7}'.format(minx, miny, maxx, maxy, xres, yres, src_file, dst_file)
     subprocess.call(cmd, shell=True)
 
     # Rasterizing train stations
     print("Rasterizing train stations layer")
     src_file = os.path.join(save_data_path , "{0}_train_stations.shp".format(country))
     dst_file = os.path.join(merge_folder_path , "{0}_train_stations.tif".format(country))
-    cmd = '{0}\gdal_rasterize.exe -a station -te {1} {2} {3} {4} -tr {5} {6} {7} {8}'.format(gdal_rasterize_path, minx, miny, maxx, maxy, xres, yres, src_file, dst_file)
+    cmd = 'gdal_rasterize -a station -te {0} {1} {2} {3} -tr {4} {5} {6} {7}'.format(minx, miny, maxx, maxy, xres, yres, src_file, dst_file)
     subprocess.call(cmd, shell=True)
 
     # Rasterizing train stations
     print("Rasterizing municipality information layer")
     src_file = os.path.join(save_data_path , "{0}_municipality.shp".format(country))
     dst_file = os.path.join(merge_folder_path , "{0}_municipality.tif".format(country))
-    cmd = '{0}\gdal_rasterize.exe -a municipali -te {1} {2} {3} {4} -tr {5} {6} {7} {8}'.format(gdal_rasterize_path, minx, miny, maxx, maxy, xres, yres, src_file, dst_file)
+    cmd = 'gdal_rasterize -a municipali -te {0} {1} {2} {3} -tr {4} {5} {6} {7}'.format(minx, miny, maxx, maxy, xres, yres, src_file, dst_file)
     subprocess.call(cmd, shell=True)

@@ -17,11 +17,11 @@ country = 'Denmark'
 
 # choose processes to run ----------------------------------------------------------------------------------------------
 # Initial preparation of Population raster and slope ("yes" / "no")
-init_prep = "yes"
+init_prep = "no"
 #Import data to postgres? ("yes" / "no")
-init_import_to_postgres = "yes"
+init_import_to_postgres = "no"
 # Run postgres queries? ("yes" / "no")
-init_run_queries = "yes"
+init_run_queries = "no"
 # calculate multiple train buffers? (dict{'column_name':biffersize in meters} or one ("yes", buffersize in meters)?
 #multiple_train = "yes"
 #multiple_train_dict = {'station2':2000, 'station5':5000, 'station10':10000, 'station20':20000}
@@ -38,7 +38,7 @@ init_merge_data = "yes"
 # path to postgresql bin folder
 pgpath = '/usr/local/bin/psql'
 pghost = 'localhost'
-pgport = '5432'
+pgport = '5432' 
 pguser = 'carsten'
 pgpassword = ''
 pgdatabase = 'popnet'
