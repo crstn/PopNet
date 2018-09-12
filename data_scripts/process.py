@@ -17,7 +17,7 @@ from import_to_postgres import import_to_postgres
 def process_data(country, pgpath, pghost, pgport, pguser, pgpassword, pgdatabase, ancillary_data_folder_path,
                  gadm_folder_path, ghs_folder_path, temp_folder_path, merge_folder_path, finished_data_path,
                  init_prep, init_import_to_postgres, init_run_queries, init_export_data, init_rasterize_data,
-                 init_merge_data, overwrite=False):
+                 init_merge_data, overwrite=True):
     #Start total preparation time timer
     start_total_algorithm_timer = time.time()
 
@@ -193,7 +193,7 @@ def process_data(country, pgpath, pghost, pgport, pguser, pgpassword, pgdatabase
         cutlinefile = os.path.join(temp_folder_path,"GADM_{0}.shp".format(country))
         srcfile = os.path.join(ancillary_data_folder_path,"slope","eudem_slop_3035_europe.tif")
         dstfile = os.path.join(temp_folder_path,"slope_250_{0}.tif".format(country))
-        cmds = 'gdalwarp -overwrite -r average -te_srs EPSG:54009 -tr 250 250 -te {0} {1} {2} {3} -cutline {4} -srcnodata 255 -dstnodata 0 {5} {6}'.format(minx, miny, maxx, maxy, cutlinefile, srcfile, dstfile)
+        cmds = 'gdalwarp -overwrite -r average -t_srs EPSG:54009 -tr 250 250 -te {0} {1} {2} {3} -cutline {4} -srcnodata 255 -dstnodata 0 {5} {6}'.format(minx, miny, maxx, maxy, cutlinefile, srcfile, dstfile)
 
         if (not os.path.exists(dstfile)) or (overwrite):
             subprocess.call(cmds, shell=True)

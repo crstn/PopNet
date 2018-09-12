@@ -17,20 +17,20 @@ country = 'Denmark'
 
 # choose processes to run ----------------------------------------------------------------------------------------------
 # Initial preparation of Population raster and slope ("yes" / "no")
-init_prep = "no"
+init_prep = "yes"
 #Import data to postgres? ("yes" / "no")
-init_import_to_postgres = "no"
+init_import_to_postgres = "yes"
 # Run postgres queries? ("yes" / "no")
-init_run_queries = "no"
+init_run_queries = "yes"
 # calculate multiple train buffers? (dict{'column_name':biffersize in meters} or one ("yes", buffersize in meters)?
 #multiple_train = "yes"
 #multiple_train_dict = {'station2':2000, 'station5':5000, 'station10':10000, 'station20':20000}
 #one_train_buffer = "yes", 10000
 
 # export data from postgres? ("yes" / "no")
-init_export_data = "no"
+init_export_data = "yes"
 # rasterize data from postgres? ("yes" / "no")
-init_rasterize_data = "no"
+init_rasterize_data = "yes"
 # Merge data from postgres? ("yes" / "no")
 init_merge_data = "yes"
 

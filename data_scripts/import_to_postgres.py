@@ -13,12 +13,22 @@ def import_to_postgres(country, pgpath, pghost, pgport, pguser, pgpassword, pgda
     if overwrite:
         print("♻️ Deleting old database tables for fresh import.")
 
+        # kill all existing connections to the DB
+        cmd = 'psql -d {0} -U {1} -c "SELECT pg_terminate_backend(pg_stat_activity.pid) \
+                                        FROM pg_stat_activity \
+                                        WHERE pg_stat_activity.datname = \'{0}\' \
+                                        AND pid <> pg_backend_pid();"'.format(pgdatabase, pguser)
+        os.system(cmd)
+
+        # delete it
         cmd = 'dropdb {0}'.format(pgdatabase)
         os.system(cmd)
 
+        # create a new one
         cmd = 'createdb -O {0} {1}'.format(pguser, pgdatabase)
         os.system(cmd)
 
+        # enable postgis on it
         cmd = 'psql -d {0} -U {1} -c "create extension postgis;"'.format(pgdatabase, pguser)
         os.system(cmd)
 
