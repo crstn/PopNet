@@ -641,8 +641,9 @@ def run_queries(landname, pgdatabase, pguser, pghost, pgpassword):
                            UPDATE {0}_cover_analysis
                            SET municipality = a.gid
                            FROM a
-                           WHERE a.gid = {0}_cover_analysis.id;""".format(country, chunk))
+                           WHERE a.id = {0}_cover_analysis.id;""".format(country, chunk))
             conn.commit()
+
 
             # Drop chunk_nr table
             cur.execute("DROP TABLE chunk_nr{0};".format(chunk))  # 22 ms
