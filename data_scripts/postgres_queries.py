@@ -333,10 +333,10 @@ def run_queries(landname, pgdatabase, pguser, pghost, pgpassword):
     cur = conn.cursor()
 
     # Check for and add srid 54009 if not existing
-    cur.execute("SELECT gid FROM denmark_groads WHERE ST_isValid(geom) = False;")
+    cur.execute("SELECT gid FROM {0}_groads WHERE ST_isValid(geom) = False;".format(country))
     if cur.rowcount > 0:
         print(str(cur.rowcount) + " invalid road geometries... removing them.")
-        cur.execute("DELETE FROM denmark_groads WHERE ST_isValid(geom) = False;")
+        cur.execute("DELETE FROM {0}_groads WHERE ST_isValid(geom) = False;".format(country))
 
         conn.commit()
 
@@ -585,7 +585,7 @@ def run_queries(landname, pgdatabase, pguser, pghost, pgpassword):
 
             # Counting number of train stations within x km distance
             cur.execute("""with a as (select chunk_nr{1}.id, count(*) from {0}_train, chunk_nr{1}
-            where st_dwithin(chunk_nr{1}.geom, ST_SetSRID({0}_train.geom, 54009), 10000)
+            where st_dwithin(chunk_nr{1}.geom, {0}_train.geom, 10000)
             group by chunk_nr{1}.id)
             update {0}_cover_analysis set station = a.count from a where a.id = {0}_cover_analysis.id;""".format(country, chunk))  # 4.1 sec
             conn.commit()

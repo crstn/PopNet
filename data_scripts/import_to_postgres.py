@@ -7,7 +7,7 @@ import subprocess
 import psycopg2
 
 def import_to_postgres(country, pgpath, pghost, pgport, pguser, pgpassword, pgdatabase,
-                       temp_folder_path, ancillary_data_folder_path, overwrite=True):
+                       temp_folder_path, ancillary_data_folder_path, overwrite=False):
 
 
     if overwrite:
@@ -112,9 +112,7 @@ def import_to_postgres(country, pgpath, pghost, pgport, pguser, pgpassword, pgda
     # Loading trainstations into postgres
     print("Importing train stations to postgres")
     trainpath = os.path.join(temp_folder_path , "european_train_stations.shp")
-    cmds =  'ogr2ogr -overwrite -lco GEOMETRY_NAME=geom -lco SCHEMA=public -f "PostgreSQL" \
-            PG:"host={0} port={1} user={2} dbname={3} password={4}" \
-            {5} -sql "select * from european_train_stations" -nln {6}_train'.format(pghost, pgport, pguser, pgdatabase, pgpassword,trainpath, country)
+    cmds = 'shp2pgsql -I -s 4326:54009 {2} public.{3}_train | psql -d {1} -U {0} -q'.format(pguser, pgdatabase, trainpath, country)
     subprocess.call(cmds, shell=True)
 
 

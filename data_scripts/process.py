@@ -256,7 +256,7 @@ def process_data(country, pgpath, pghost, pgport, pguser, pgpassword, pgdatabase
               .format(country))
         infile = os.path.join(ancillary_data_folder_path,"european-train-stations","european-train-stations.shp")
         outfile = os.path.join(temp_folder_path,"european_train_stations.shp")
-        country_code_dict = {'Denmark': 'DK', 'France': 'FR', 'Deutschland': 'DE'}
+        country_code_dict = {'Denmark': 'DK', 'France': 'FR', 'Deutschland': 'DE', 'Greece': 'GR'}
         sql_statement = '"country=\'{0}\'"'.format(country_code_dict[country])
         cmds = "ogr2ogr -overwrite -where {0} {1} {2}".format(sql_statement, outfile, infile)
 

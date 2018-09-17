@@ -13,7 +13,7 @@ from process import process_data
 # Project_data
 
 # Specify country to extract data from ---------------------------------------------------------------------------------
-country = 'Denmark'
+country = 'Greece'
 
 # choose processes to run ----------------------------------------------------------------------------------------------
 # Initial preparation of Population raster and slope ("yes" / "no")
