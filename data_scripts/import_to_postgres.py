@@ -7,7 +7,7 @@ import subprocess
 import psycopg2
 
 def import_to_postgres(country, pgpath, pghost, pgport, pguser, pgpassword, pgdatabase,
-                       temp_folder_path, ancillary_data_folder_path, overwrite=False):
+                       temp_folder_path, ancillary_data_folder_path, overwrite=True):
 
 
     if overwrite:
