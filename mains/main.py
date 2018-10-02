@@ -17,7 +17,7 @@ from utils.utils import get_args
 base_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(base_dir)
 
-config_dir = os.path.relpath('..\\configs', base_dir)
+config_dir = os.path.relpath(os.path.join('..', 'configs', base_dir))
 
 args = get_args()
 if args.config != 'None':
@@ -25,7 +25,7 @@ if args.config != 'None':
 else:
     config = process_config(os.path.join(config_dir, 'config.json'))
 
-data_dir = os.path.relpath('..\\data\\{}'.format(config.exp_name), base_dir)
+data_dir = os.path.relpath(os.path.join('..','data',config.exp_name), base_dir)
 
 def main():
     # capture the config path from the run arguments
