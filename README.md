@@ -16,6 +16,15 @@ For the data preparation part, the following dependencies need to be installed:
 	- [osgeo.gdal](https://gdal.org/python/)
 	- [psycopg2](http://initd.org/psycopg/)
 
+Besides PostGIS and the GDAL binaries, the Python dependencies can be set up in a separate [Conda](https://www.anaconda.com/download/) environment by running:
+
+```
+conda create --name popnet_prepare
+conda activate popnet_prepare
+conda install gdal
+conda install psycopg2
+```
+
 The following datasets need to be downloaded:
 
 - [Corine Land Cover 1990](https://land.copernicus.eu/pan-european/corine-land-cover/clc-1990?tab=download) in SpatiaLite format
@@ -23,11 +32,11 @@ The following datasets need to be downloaded:
 - [Copernicus slope](https://land.copernicus.eu/pan-european/satellite-derived-products/eu-dem/eu-dem-v1-0-and-derived-products/slope?tab=download) (The *Slope Full European Coverage* file)
 - [European train stations](https://public.opendatasoft.com/explore/dataset/european-train-stations/information/) in shape file format (```.shp```)
 - [Administrative boundaries](https://gadm.org/download_world.html) at levels 0 and 2 in shape file format (```.shp```)  
-- [Lakes](https://www.eea.europa.eu/data-and-maps/data/european-catchments-and-rivers-network#tab-gis-data)  in shape file format (```.shp```). The database comes in SpatiaLite format; I had to export the lakes layer from it and retroject it to EPSG:4326 to make the code run 
+- [Lakes](https://www.eea.europa.eu/data-and-maps/data/european-catchments-and-rivers-network#tab-gis-data)  in shape file format (```.shp```). The database comes in SpatiaLite format; I had to export the lakes layer from it and retroject it to EPSG:4326 to make the code run
 - [Population grid](http://cidportal.jrc.ec.europa.eu/ftp/jrc-opendata/GHSL/GHS_POP_GPW4_GLOBE_R2015A/) from JRC's [Global Human Settlement Layer](https://ghsl.jrc.ec.europa.eu/datasets.php) (each layer needs to be downloaded for 1975, 1990, 2000, and 2015 at 250m resolution)
 - [Global Roads Open Access Data Set](http://sedac.ciesin.columbia.edu/data/set/groads-global-roads-open-access-v1/data-download) in shape file format (```.shp```)  
 
-	 
+
 Everything should be place in a folder called ```data```, sitting in the ```data_scripts``` folder. Its content should look like this:
 
 
@@ -146,8 +155,8 @@ Everything should be place in a folder called ```data```, sitting in the ```data
             │   └── gROADS-v1-europe.shx
             └── slope
                 └── eudem_slop_3035_europe.tif
-                                
 
-When everything is in place, you are ready to run ```main.py``` to run the data preparation. Make sure to check and eventually change the configuration options at the top of that script. 
+
+When everything is in place, you are ready to run ```main.py``` to run the data preparation. Make sure to check and eventually change the configuration options at the top of that script.
 
 Good luck...
